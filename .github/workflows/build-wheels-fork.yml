@@ -18,18 +18,14 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.x"
-      - name: Build manylinux wheels (x86_64)
+      # Only what Home Assistant needs: HA Core runs on Alpine (musl libc),
+      # x86_64, CPython 3.14 -> a single musllinux_1_2 cp314 wheel. Keeps the
+      # build fast (no full interpreter matrix / no manylinux).
+      - name: Build wheel (cp314, x86_64, musllinux — HA target)
         uses: PyO3/maturin-action@v1
         with:
           target: x86_64
-          args: --release --out dist --find-interpreter
-          sccache: true
-          manylinux: "2_28"
-      - name: Build musllinux wheels (x86_64)
-        uses: PyO3/maturin-action@v1
-        with:
-          target: x86_64
-          args: --release --out dist --find-interpreter
+          args: --release --out dist --interpreter 3.14
           sccache: true
           manylinux: musllinux_1_2
       - name: List built wheels
