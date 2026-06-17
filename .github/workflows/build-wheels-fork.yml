@@ -1,0 +1,49 @@
+name: Build wheels (fork)
+
+# Fork-only: build the Linux x86_64 wheels (glibc + musl, all interpreters incl.
+# cp314) from this branch and attach them to a pre-release on THIS fork. Used to
+# test the VNish hydro patch on Home Assistant without going through PyPI (we do
+# not publish under the upstream `pyasic-rs` name). Trigger manually.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+      - name: Build manylinux wheels (x86_64)
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64
+          args: --release --out dist --find-interpreter
+          sccache: true
+          manylinux: "2_28"
+      - name: Build musllinux wheels (x86_64)
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64
+          args: --release --out dist --find-interpreter
+          sccache: true
+          manylinux: musllinux_1_2
+      - name: List built wheels
+        run: ls -la dist
+      - name: Publish wheels to a fork pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: wheels-vnish-${{ github.run_number }}
+          name: VNish-patched pyasic_rs wheels (fork build ${{ github.run_number }})
+          body: |
+            Fork build of pyasic_rs with the VNish hydro fix
+            (board count from chains + per-board water temps + fluid temperature).
+            NOT an official pyasic-rs release. For Home-Assistant testing only.
+          prerelease: true
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
