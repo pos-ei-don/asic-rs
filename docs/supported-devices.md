@@ -73,7 +73,7 @@ Legend:
 		 - [x] `ANTMINER S19`
 		 - [x] `ANTMINER S19 HYDRO`
 		 - [x] `ANTMINER S19 PRO`
-		 - [x] `ANTMINER S19 PRO HYD.`
+		 - [x] `ANTMINER S19 PRO HYD.` (also: `ANTMINER S19 PRO HYDRO`)
 		 - [x] `ANTMINER S19 PRO+ HYD.`
 		 - [x] `ANTMINER S19 XP`
 		 - [x] `ANTMINER S19+`
