@@ -27,14 +27,16 @@ jobs:
       # (Antminer hardware on VNish + BraiinsOS). The factory registry and the
       # lib re-exports are already #[cfg(feature)]-gated, so this excludes the
       # ~9 unused firmware crates (+ their make deps) and cuts compile time.
-      # `python` is enabled via pyproject [tool.maturin] features.
+      # NB: `python` must be listed explicitly here — passing --features on the
+      # CLI replaces pyproject's [tool.maturin] features=["python"], so without
+      # it pyo3 isn't built and maturin fails with "find a python interpreter".
       - name: Build wheel (cp314, x86_64, musllinux — HA target, gated firmwares)
         uses: PyO3/maturin-action@v1
         with:
           target: x86_64
           args: >-
             --release --out dist --interpreter 3.14
-            --no-default-features --features core,proto,antminer,vnish,braiins
+            --no-default-features --features python,core,proto,antminer,vnish,braiins
           sccache: true
           manylinux: musllinux_1_2
       - name: List built wheels
