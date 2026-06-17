@@ -30,6 +30,15 @@ jobs:
           manylinux: musllinux_1_2
       - name: List built wheels
         run: ls -la dist
+      # Persist the wheels as a run artifact BEFORE publishing, so they survive
+      # even if a later step (publish/release) fails or the run is cancelled —
+      # no need to burn a full rebuild just to recover them.
+      - name: Upload wheels as run artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels
+          path: dist/*
+          if-no-files-found: error
       - name: Publish wheels to a fork pre-release
         uses: softprops/action-gh-release@v2
         with:
