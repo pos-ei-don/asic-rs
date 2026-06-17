@@ -399,6 +399,7 @@ impl GetHashboards for VnishV120 {
                 .or(intake);
             board.intake_temperature = intake.map(|t| Temperature::from_celsius(t as f64));
             board.outlet_temperature = outlet.map(|t| Temperature::from_celsius(t as f64));
+            board.chip_temperature = chip_max.map(|t| Temperature::from_celsius(t as f64));
             board.working_chips = chain
                 .pointer("/chips")
                 .and_then(|v| v.as_array())
