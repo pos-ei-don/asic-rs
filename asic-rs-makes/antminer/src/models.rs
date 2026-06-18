@@ -188,7 +188,11 @@ mod tests {
             AntMinerModel::S21PlusHydro,
             AntMinerModel::S21eXPHydro,
         ] {
-            assert_eq!(model.cooling(), CoolingType::Hydro, "{model} should be hydro");
+            assert_eq!(
+                model.cooling(),
+                CoolingType::Hydro,
+                "{model} should be hydro"
+            );
         }
     }
 
