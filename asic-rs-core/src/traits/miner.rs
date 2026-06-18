@@ -225,6 +225,16 @@ impl<
         let tuning_target = self.parse_tuning_target(&data);
         let scaled_tuning_target = self.parse_scaled_tuning_target(&data);
         let fluid_temperature = self.parse_fluid_temperature(&data);
+        // Configured thermal limits are simple scalars a backend points to (°C),
+        // so they're read directly here rather than via per-backend parse traits.
+        let min_startup_temperature = data
+            .get(&DataField::MinStartupTemperature)
+            .and_then(|v| v.as_f64())
+            .map(Temperature::from_celsius);
+        let restart_temperature = data
+            .get(&DataField::RestartTemperature)
+            .and_then(|v| v.as_f64())
+            .map(Temperature::from_celsius);
         let fans = self.parse_fans(&data);
         let psu_fans = self.parse_psu_fans(&data);
         let hashboards = self.parse_hashboards(&data);
@@ -307,6 +317,8 @@ impl<
             psu_fans,
             average_temperature,
             fluid_temperature,
+            min_startup_temperature,
+            restart_temperature,
 
             // Power information
             wattage,
