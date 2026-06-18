@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+from datetime import timedelta
 from typing import Any
 
 import pytest
@@ -10,6 +11,8 @@ from pyasic_rs.asic_rs import HashAlgorithm, Miner
 from pyasic_rs.config import FanConfig, TuningConfig
 from pyasic_rs.data import (
     ChipData,
+    CoolingType,
+    DeviceInfo,
     HashRate,
     HashRateUnit,
     MessageSeverity,
@@ -196,6 +199,7 @@ def test_miner_data_repr_uses_pydantic_model_style() -> None:
                     "board_temperature": None,
                     "intake_temperature": None,
                     "outlet_temperature": None,
+                    "chip_temperature": None,
                     "expected_chips": None,
                     "working_chips": None,
                     "serial_number": None,
@@ -237,6 +241,48 @@ def test_miner_hardware_accepts_new_shape_and_keeps_compat_properties() -> None:
     assert uniform.board_count == 3
     assert uniform.chips == 180
     assert uniform.boards == [60, 60, 60]
+
+
+def test_device_info_exposes_capability_fields() -> None:
+    info = DeviceInfo.model_validate(
+        {
+            "make": "Antminer",
+            "model": "S19 Pro Hydro",
+            "hardware": {"fans": 0, "boards": [110, 110, 110]},
+            "firmware": "VNish",
+            "algo": "SHA256",
+            "cooling": "Hydro",
+            "reports_chip_temperature": True,
+        }
+    )
+
+    dumped = info.model_dump()
+    assert dumped["cooling"] == "Hydro"
+    assert dumped["reports_chip_temperature"] is True
+
+
+def test_device_info_capability_fields_default_when_absent() -> None:
+    # Pre-capability payloads omit the fields; they must default conservatively
+    # (air cooling, no chip-temperature reporting) rather than fail validation.
+    info = DeviceInfo.model_validate(
+        {
+            "make": "Antminer",
+            "model": "S19",
+            "hardware": {"fans": 4, "boards": [76, 76, 76]},
+            "firmware": "Stock",
+            "algo": "SHA256",
+        }
+    )
+
+    dumped = info.model_dump()
+    assert dumped["cooling"] == "Air"
+    assert dumped["reports_chip_temperature"] is False
+
+
+def test_cooling_type_enum_roundtrips() -> None:
+    assert str(CoolingType.Hydro) == "Hydro"
+    assert str(CoolingType.Air) == "Air"
+    assert str(CoolingType.Immersion) == "Immersion"
 
 
 def test_miner_hardware_rejects_legacy_shape() -> None:
@@ -648,7 +694,7 @@ def test_miner_data_serializes_uptime_seconds() -> None:
     model = MinerDataModel.model_validate({"miner": minimal_miner_data(uptime=1.25)})
 
     assert isinstance(model.miner, MinerData)
-    assert model.model_dump()["miner"]["uptime"] == 1.0
+    assert model.model_dump()["miner"]["uptime"] == timedelta(seconds=1.25)
 
 
 def test_miner_data_control_board_uses_model_shape() -> None:
