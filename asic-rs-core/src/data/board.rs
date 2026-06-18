@@ -60,6 +60,11 @@ pub struct BoardData {
     #[serde(serialize_with = "serialize_temperature")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub outlet_temperature: Option<Temperature>,
+    /// The temperature of the chips on this board (typically the hottest chip),
+    /// where the firmware reports it separately from the board/PCB sensor
+    #[serde(serialize_with = "serialize_temperature")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chip_temperature: Option<Temperature>,
     /// The expected number of chips on this board
     pub expected_chips: Option<u16>,
     /// The number of working chips on this board
