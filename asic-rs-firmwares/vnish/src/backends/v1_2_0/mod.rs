@@ -837,9 +837,10 @@ impl SetPowerLimit for VnishV120 {
 
         // Verify the preset was accepted.
         let updated = self.web.settings().await?;
-        let applied = updated
-            .pointer("/miner/overclock/preset")
-            .and_then(|p| p.as_i64().or_else(|| p.as_str().and_then(|s| s.parse().ok())));
+        let applied = updated.pointer("/miner/overclock/preset").and_then(|p| {
+            p.as_i64()
+                .or_else(|| p.as_str().and_then(|s| s.parse().ok()))
+        });
         Ok(applied == Some(preset_watts))
     }
 }
