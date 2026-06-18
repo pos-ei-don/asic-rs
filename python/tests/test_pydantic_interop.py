@@ -279,6 +279,22 @@ def test_device_info_capability_fields_default_when_absent() -> None:
     assert dumped["reports_chip_temperature"] is False
 
 
+def test_miner_data_exposes_thermal_limits() -> None:
+    model = MinerData.model_validate(
+        minimal_miner_data(min_startup_temperature=17.0, restart_temperature=78.0)
+    )
+    dumped = model.model_dump()
+    assert dumped["min_startup_temperature"] == 17.0
+    assert dumped["restart_temperature"] == 78.0
+
+
+def test_miner_data_thermal_limits_default_to_none() -> None:
+    # Pre-limit payloads omit the fields; they must default to None, not fail.
+    dumped = MinerData.model_validate(minimal_miner_data()).model_dump()
+    assert dumped["min_startup_temperature"] is None
+    assert dumped["restart_temperature"] is None
+
+
 def test_cooling_type_enum_roundtrips() -> None:
     assert str(CoolingType.Hydro) == "Hydro"
     assert str(CoolingType.Air) == "Air"
