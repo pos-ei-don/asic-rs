@@ -196,6 +196,7 @@ def test_miner_data_repr_uses_pydantic_model_style() -> None:
                     "board_temperature": None,
                     "intake_temperature": None,
                     "outlet_temperature": None,
+                    "chip_temperature": None,
                     "expected_chips": None,
                     "working_chips": None,
                     "serial_number": None,
