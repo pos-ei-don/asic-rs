@@ -136,6 +136,19 @@ impl asic_rs_core::traits::model::MinerModel for AntMinerModel {
     fn make_name(&self) -> String {
         "Antminer".to_string()
     }
+
+    fn cooling(&self) -> asic_rs_core::data::device::CoolingType {
+        use asic_rs_core::data::device::CoolingType;
+        match self {
+            AntMinerModel::S19Hydro
+            | AntMinerModel::S19ProHydro
+            | AntMinerModel::S19ProPlusHydro
+            | AntMinerModel::S21Hydro
+            | AntMinerModel::S21PlusHydro
+            | AntMinerModel::S21eXPHydro => CoolingType::Hydro,
+            _ => CoolingType::Air,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -160,5 +173,32 @@ mod tests {
 
         // Assert
         assert_eq!(result, AntMinerModel::Unknown("ANTMINER S99".to_string()));
+    }
+
+    #[test]
+    fn hydro_models_report_hydro_cooling() {
+        use asic_rs_core::data::device::CoolingType;
+        use asic_rs_core::traits::model::MinerModel;
+
+        for model in [
+            AntMinerModel::S19Hydro,
+            AntMinerModel::S19ProHydro,
+            AntMinerModel::S19ProPlusHydro,
+            AntMinerModel::S21Hydro,
+            AntMinerModel::S21PlusHydro,
+            AntMinerModel::S21eXPHydro,
+        ] {
+            assert_eq!(model.cooling(), CoolingType::Hydro, "{model} should be hydro");
+        }
+    }
+
+    #[test]
+    fn air_cooled_models_default_to_air() {
+        use asic_rs_core::data::device::CoolingType;
+        use asic_rs_core::traits::model::MinerModel;
+
+        // A plain S19 (and a k-Pro class air-cooled unit) must not claim hydro cooling.
+        assert_eq!(AntMinerModel::S19.cooling(), CoolingType::Air);
+        assert_eq!(AntMinerModel::S21.cooling(), CoolingType::Air);
     }
 }
