@@ -6,7 +6,7 @@ applicable.
 """
 
 from pyasic_rs.asic_rs import BoardData, ChipData
-from pyasic_rs.asic_rs import DeviceInfo, MinerHardware
+from pyasic_rs.asic_rs import CoolingType, DeviceInfo, MinerHardware
 from pyasic_rs.asic_rs import FanData
 from pyasic_rs.asic_rs import HashRate, HashRateUnit
 from pyasic_rs.asic_rs import MinerComponent, MinerControlBoard, MinerData, MinerMessage
@@ -19,6 +19,7 @@ from pyasic_rs.asic_rs import DataField
 __all__ = [
     "BoardData",
     "ChipData",
+    "CoolingType",
     "DeviceInfo",
     "FanData",
     "HashRate",

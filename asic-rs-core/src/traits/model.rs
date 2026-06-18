@@ -4,11 +4,20 @@ use std::{
     str::FromStr,
 };
 
-use crate::{data::device::MinerHardware, errors::ModelSelectionError};
+use crate::{
+    data::device::{CoolingType, MinerHardware},
+    errors::ModelSelectionError,
+};
 
 pub trait MinerModel: Display + Into<MinerHardware> + Clone + Any {
     fn make_name(&self) -> String;
     fn is_known(&self) -> bool;
+    /// The cooling method used by this miner model.
+    ///
+    /// Defaults to air cooling; hydro/immersion models override this.
+    fn cooling(&self) -> CoolingType {
+        CoolingType::Air
+    }
 }
 
 #[derive(Debug, Clone)]

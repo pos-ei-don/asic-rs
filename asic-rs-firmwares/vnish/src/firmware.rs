@@ -60,6 +60,10 @@ impl MinerFirmware for VnishFirmware {
             .ok()
             .or_else(|| semver::Version::parse(&format!("{}.0", version_str)).ok())
     }
+
+    fn reports_chip_temperature(&self) -> bool {
+        true
+    }
 }
 
 impl FirmwareIdentification for VnishFirmware {
@@ -86,5 +90,17 @@ impl FirmwareEntry for VnishFirmware {
             miner.set_auth(auth.clone());
         }
         Ok(miner)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use asic_rs_core::traits::firmware::MinerFirmware;
+
+    use super::*;
+
+    #[test]
+    fn vnish_reports_chip_temperature() {
+        assert!(VnishFirmware::default().reports_chip_temperature());
     }
 }
