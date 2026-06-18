@@ -803,14 +803,18 @@ impl SetPowerLimit for VnishV120 {
             .ok_or_else(|| anyhow::anyhow!("unexpected /autotune/presets response"))?;
 
         // Each preset: { "name": "3495", "pretty": "3495 watt ~ 132 TH",
-        //               "status": "tuned", ... }. Power is parsed from `pretty`.
+        //               "status": "tuned", ... }.
+        // Consider ALL presets (tuned and un-tuned): an un-tuned preset is a
+        // valid target, it just triggers a tuning cycle (effectively a restart)
+        // before it settles — same behaviour as e.g. Whatsminer rebooting on a
+        // power-limit change. Watts come from the preset `name` (the bare number,
+        // present for tuned and un-tuned alike); non-numeric names like
+        // "disabled" are skipped by the parse.
         let best = preset_list
             .iter()
-            .filter(|p| p.get("status").and_then(|s| s.as_str()) == Some("tuned"))
             .filter_map(|p| {
-                let pretty = p.get("pretty")?.as_str()?;
-                let (watt_part, _) = pretty.split_once('~')?;
-                watt_part.replace("watt", "").trim().parse::<i64>().ok()
+                let name = p.get("name")?.as_str()?;
+                name.trim().parse::<i64>().ok()
             })
             .filter(|&w| w <= target_watts)
             .max();
