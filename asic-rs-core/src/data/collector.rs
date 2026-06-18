@@ -71,6 +71,12 @@ pub enum DataField {
     /// Coolant exhaust (outlet) fluid temperature reported by the miner.
     #[cfg_attr(feature = "python", pydantic(value = "OutletFluidTemperature"))]
     OutletFluidTemperature,
+    /// Configured minimum temperature below which the miner refuses to start.
+    #[cfg_attr(feature = "python", pydantic(value = "MinStartupTemperature"))]
+    MinStartupTemperature,
+    /// Configured temperature at/above which the miner protects itself (restart/shutdown).
+    #[cfg_attr(feature = "python", pydantic(value = "RestartTemperature"))]
+    RestartTemperature,
     /// Current power consumption in watts.
     #[cfg_attr(feature = "python", pydantic(value = "Wattage"))]
     Wattage,

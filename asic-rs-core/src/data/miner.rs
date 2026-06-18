@@ -111,6 +111,17 @@ pub struct MinerData {
     /// The coolant exhaust temperature, only for water-cooled miners with dedicated sensors
     #[serde(serialize_with = "serialize_temperature")]
     pub outlet_fluid_temperature: Option<Temperature>,
+    /// The configured temperature below which the miner refuses to start hashing
+    /// (e.g. a hydro miner's minimum coolant startup temperature). Constant config,
+    /// not live telemetry; lets consumers show/align to the device's own limit.
+    #[serde(default, serialize_with = "serialize_temperature")]
+    #[cfg_attr(feature = "python", pydantic(default = None))]
+    pub min_startup_temperature: Option<Temperature>,
+    /// The configured temperature at/above which the miner protects itself
+    /// (restart/shutdown threshold). Constant config, not live telemetry.
+    #[serde(default, serialize_with = "serialize_temperature")]
+    #[cfg_attr(feature = "python", pydantic(default = None))]
+    pub restart_temperature: Option<Temperature>,
     /// The current power consumption of the miner
     #[serde(serialize_with = "serialize_power")]
     pub wattage: Option<Power>,

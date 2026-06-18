@@ -94,6 +94,10 @@ impl GetDataLocations for VnishV120 {
             command: "chains/factory-info",
             parameters: None,
         };
+        const WEB_SETTINGS: MinerCommand = MinerCommand::WebAPI {
+            command: "settings",
+            parameters: None,
+        };
 
         match data_field {
             DataField::Mac => vec![(
@@ -275,6 +279,22 @@ impl GetDataLocations for VnishV120 {
                 DataExtractor {
                     func: get_by_pointer,
                     key: Some("/miner/miner_status"),
+                    tag: None,
+                },
+            )],
+            DataField::MinStartupTemperature => vec![(
+                WEB_SETTINGS,
+                DataExtractor {
+                    func: get_by_pointer,
+                    key: Some("/miner/cooling/min_startup_water_temp"),
+                    tag: None,
+                },
+            )],
+            DataField::RestartTemperature => vec![(
+                WEB_SETTINGS,
+                DataExtractor {
+                    func: get_by_pointer,
+                    key: Some("/miner/misc/restart_temp"),
                     tag: None,
                 },
             )],
@@ -616,9 +636,7 @@ impl GetMessages for VnishV120 {
             );
             if !normal {
                 let severity = match state.to_lowercase().as_str() {
-                    "failure" | "failed" | "error" | "broken" | "stopped" => {
-                        MessageSeverity::Error
-                    }
+                    "failure" | "failed" | "error" | "broken" | "stopped" => MessageSeverity::Error,
                     _ => MessageSeverity::Warning,
                 };
                 messages.push(MinerMessage::new(

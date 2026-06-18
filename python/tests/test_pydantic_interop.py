@@ -10,6 +10,8 @@ from pyasic_rs.asic_rs import HashAlgorithm, Miner
 from pyasic_rs.config import FanConfig, TuningConfig
 from pyasic_rs.data import (
     ChipData,
+    CoolingType,
+    DeviceInfo,
     HashRate,
     HashRateUnit,
     MessageSeverity,
@@ -238,6 +240,64 @@ def test_miner_hardware_accepts_new_shape_and_keeps_compat_properties() -> None:
     assert uniform.board_count == 3
     assert uniform.chips == 180
     assert uniform.boards == [60, 60, 60]
+
+
+def test_device_info_exposes_capability_fields() -> None:
+    info = DeviceInfo.model_validate(
+        {
+            "make": "Antminer",
+            "model": "S19 Pro Hydro",
+            "hardware": {"fans": 0, "boards": [110, 110, 110]},
+            "firmware": "VNish",
+            "algo": "SHA256",
+            "cooling": "Hydro",
+            "reports_chip_temperature": True,
+        }
+    )
+
+    dumped = info.model_dump()
+    assert dumped["cooling"] == "Hydro"
+    assert dumped["reports_chip_temperature"] is True
+
+
+def test_device_info_capability_fields_default_when_absent() -> None:
+    # Pre-capability payloads omit the fields; they must default conservatively
+    # (air cooling, no chip-temperature reporting) rather than fail validation.
+    info = DeviceInfo.model_validate(
+        {
+            "make": "Antminer",
+            "model": "S19",
+            "hardware": {"fans": 4, "boards": [76, 76, 76]},
+            "firmware": "Stock",
+            "algo": "SHA256",
+        }
+    )
+
+    dumped = info.model_dump()
+    assert dumped["cooling"] == "Air"
+    assert dumped["reports_chip_temperature"] is False
+
+
+def test_miner_data_exposes_thermal_limits() -> None:
+    model = MinerData.model_validate(
+        minimal_miner_data(min_startup_temperature=17.0, restart_temperature=78.0)
+    )
+    dumped = model.model_dump()
+    assert dumped["min_startup_temperature"] == 17.0
+    assert dumped["restart_temperature"] == 78.0
+
+
+def test_miner_data_thermal_limits_default_to_none() -> None:
+    # Pre-limit payloads omit the fields; they must default to None, not fail.
+    dumped = MinerData.model_validate(minimal_miner_data()).model_dump()
+    assert dumped["min_startup_temperature"] is None
+    assert dumped["restart_temperature"] is None
+
+
+def test_cooling_type_enum_roundtrips() -> None:
+    assert str(CoolingType.Hydro) == "Hydro"
+    assert str(CoolingType.Air) == "Air"
+    assert str(CoolingType.Immersion) == "Immersion"
 
 
 def test_miner_hardware_rejects_legacy_shape() -> None:
