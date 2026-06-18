@@ -20,6 +20,22 @@ pub struct DeviceInfo {
     pub firmware: String,
     /// Mining hash algorithm.
     pub algo: HashAlgorithm,
+    /// The cooling method used by this miner (air, hydro, immersion).
+    ///
+    /// Derived from the model and constant for a given device, so it can be used
+    /// to decide whether environment/fluid-temperature telemetry applies.
+    #[serde(default)]
+    #[cfg_attr(feature = "python", pydantic(default = CoolingType::Air))]
+    pub cooling: CoolingType,
+    /// Whether this miner's firmware reports per-board chip temperatures.
+    ///
+    /// Firmware-dependent (e.g. VNish reports chip temps, stock/Braiins do not),
+    /// constant for a given device. Lets consumers decide whether per-board
+    /// chip-temperature telemetry applies without inspecting a (possibly transient)
+    /// live value.
+    #[serde(default)]
+    #[cfg_attr(feature = "python", pydantic(default = false))]
+    pub reports_chip_temperature: bool,
 }
 
 impl DeviceInfo {
@@ -27,6 +43,8 @@ impl DeviceInfo {
     pub fn new(model: impl MinerModel, firmware: impl MinerFirmware, algo: HashAlgorithm) -> Self {
         Self {
             hardware: model.clone().into(),
+            cooling: model.cooling(),
+            reports_chip_temperature: firmware.reports_chip_temperature(),
             make: model.make_name(),
             model: model.to_string(),
             firmware: firmware.to_string(),
@@ -121,5 +139,88 @@ impl HashAlgorithm {
 
     pub fn __str__(&self) -> String {
         self.to_string()
+    }
+}
+
+#[cfg_attr(feature = "python", pyclass(from_py_object, str, module = "asic_rs"))]
+#[cfg_attr(feature = "python", derive(asic_rs_pydantic::PyPydanticEnum))]
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    Copy,
+    Hash,
+    Serialize,
+    Deserialize,
+    StrumDisplay,
+    EnumString,
+    Default,
+)]
+/// The cooling method used by a miner model.
+pub enum CoolingType {
+    /// Air cooling (default).
+    #[cfg_attr(feature = "python", pydantic(value = "Air"))]
+    #[serde(rename = "Air")]
+    #[default]
+    Air,
+    /// Hydro / water cooling.
+    #[cfg_attr(feature = "python", pydantic(value = "Hydro"))]
+    #[serde(rename = "Hydro")]
+    Hydro,
+    /// Immersion cooling.
+    #[cfg_attr(feature = "python", pydantic(value = "Immersion"))]
+    #[serde(rename = "Immersion")]
+    Immersion,
+}
+
+#[cfg_attr(feature = "python", pymethods)]
+impl CoolingType {
+    pub fn __repr__(&self) -> String {
+        self.to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cooling_type_defaults_to_air() {
+        assert_eq!(CoolingType::default(), CoolingType::Air);
+    }
+
+    #[test]
+    fn device_info_defaults_caps_when_absent_in_json() {
+        // Older payloads (pre-capability) omit `cooling` / `reports_chip_temperature`;
+        // they must deserialize to the conservative defaults rather than failing.
+        let json = r#"{
+            "make": "Antminer",
+            "model": "S19",
+            "hardware": {"fans": 4, "boards": [76, 76, 76]},
+            "firmware": "Stock",
+            "algo": "SHA256"
+        }"#;
+
+        let info: DeviceInfo = serde_json::from_str(json).expect("should deserialize");
+        assert_eq!(info.cooling, CoolingType::Air);
+        assert!(!info.reports_chip_temperature);
+    }
+
+    #[test]
+    fn device_info_roundtrips_caps() {
+        let json = r#"{
+            "make": "Antminer",
+            "model": "S19 Pro Hydro",
+            "hardware": {"fans": 0, "boards": [110, 110, 110]},
+            "firmware": "VNish",
+            "algo": "SHA256",
+            "cooling": "Hydro",
+            "reports_chip_temperature": true
+        }"#;
+
+        let info: DeviceInfo = serde_json::from_str(json).expect("should deserialize");
+        assert_eq!(info.cooling, CoolingType::Hydro);
+        assert!(info.reports_chip_temperature);
     }
 }

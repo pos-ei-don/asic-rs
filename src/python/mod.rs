@@ -17,7 +17,7 @@ mod asic_rs {
     #[pymodule_export]
     use asic_rs_core::data::collector::DataField;
     #[pymodule_export]
-    use asic_rs_core::data::device::HashAlgorithm;
+    use asic_rs_core::data::device::{CoolingType, HashAlgorithm};
     #[pymodule_export]
     use asic_rs_core::data::hashrate::{HashRate, HashRateUnit};
     #[pymodule_export]
