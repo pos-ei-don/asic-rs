@@ -1626,7 +1626,11 @@ mod tests {
         assert!(hashboards_without_chips[1].hashrate.is_some());
         assert!(hashboards_without_chips[1].board_temperature.is_some());
         assert!(hashboards_without_chips[1].inlet_chip_temperature.is_some());
-        assert!(hashboards_without_chips[1].outlet_chip_temperature.is_some());
+        assert!(
+            hashboards_without_chips[1]
+                .outlet_chip_temperature
+                .is_some()
+        );
         assert!(hashboards_without_chips[1].tuned.is_some());
 
         let mut collector = DataCollector::new_with_client(&miner, &mock_api);
