@@ -599,9 +599,7 @@ impl GetMessages for VnishV120 {
             );
             if !normal {
                 let severity = match state.to_lowercase().as_str() {
-                    "failure" | "failed" | "error" | "broken" | "stopped" => {
-                        MessageSeverity::Error
-                    }
+                    "failure" | "failed" | "error" | "broken" | "stopped" => MessageSeverity::Error,
                     _ => MessageSeverity::Warning,
                 };
                 messages.push(MinerMessage::new(
