@@ -965,6 +965,8 @@ impl SupportsFanConfig for BraiinsV2505 {
     }
 }
 
+impl SupportsTemperatureConfig for BraiinsV2505 {}
+
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;
@@ -1148,5 +1150,3 @@ mod tests {
         assert!(miner_data.expected_hashrate.is_some());
     }
 }
-
-impl SupportsTemperatureConfig for BraiinsV2505 {}

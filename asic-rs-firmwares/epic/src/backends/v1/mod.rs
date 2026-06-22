@@ -1571,6 +1571,8 @@ impl HasAuth for PowerPlayV1 {
     }
 }
 
+impl SupportsTemperatureConfig for PowerPlayV1 {}
+
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
@@ -1874,5 +1876,3 @@ mod tests {
         Ok(())
     }
 }
-
-impl SupportsTemperatureConfig for PowerPlayV1 {}

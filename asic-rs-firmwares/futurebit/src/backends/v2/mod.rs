@@ -804,6 +804,8 @@ impl HasDefaultAuth for ApolloV2 {
     }
 }
 
+impl SupportsTemperatureConfig for ApolloV2 {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -909,5 +911,3 @@ mod tests {
         );
     }
 }
-
-impl SupportsTemperatureConfig for ApolloV2 {}

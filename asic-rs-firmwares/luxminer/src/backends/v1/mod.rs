@@ -1202,6 +1202,8 @@ impl SupportsFanConfig for LuxMinerV1 {
         false
     }
 }
+
+impl SupportsTemperatureConfig for LuxMinerV1 {}
 #[cfg(test)]
 mod tests {
     use std::sync::{Arc, Mutex};
@@ -1589,5 +1591,3 @@ mod tests {
         Ok(())
     }
 }
-
-impl SupportsTemperatureConfig for LuxMinerV1 {}

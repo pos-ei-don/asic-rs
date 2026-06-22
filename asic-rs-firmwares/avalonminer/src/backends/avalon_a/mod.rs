@@ -766,6 +766,8 @@ impl SupportsFanConfig for AvalonAMiner {
     }
 }
 
+impl SupportsTemperatureConfig for AvalonAMiner {}
+
 #[cfg(test)]
 mod tests {
     use asic_rs_core::data::board::MinerControlBoard;
@@ -869,5 +871,3 @@ mod tests {
         Ok(())
     }
 }
-
-impl SupportsTemperatureConfig for AvalonAMiner {}

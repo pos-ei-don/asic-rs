@@ -961,6 +961,8 @@ impl SupportsFanConfig for BraiinsV2109 {
     }
 }
 
+impl SupportsTemperatureConfig for BraiinsV2109 {}
+
 #[cfg(test)]
 mod tests {
     use asic_rs_core::test::api::MockAPIClient;
@@ -1146,5 +1148,3 @@ mod tests {
         assert_eq!(miner_data.pools[1].quota, 1);
     }
 }
-
-impl SupportsTemperatureConfig for BraiinsV2109 {}

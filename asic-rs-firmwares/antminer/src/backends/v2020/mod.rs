@@ -1236,6 +1236,8 @@ impl SupportsFanConfig for AntMinerV2020 {
     }
 }
 
+impl SupportsTemperatureConfig for AntMinerV2020 {}
+
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
@@ -1354,5 +1356,3 @@ mod tests {
         Ok(())
     }
 }
-
-impl SupportsTemperatureConfig for AntMinerV2020 {}

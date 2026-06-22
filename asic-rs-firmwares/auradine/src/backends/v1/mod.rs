@@ -1432,6 +1432,8 @@ impl SupportsFanConfig for AuradineV1 {
     }
 }
 
+impl SupportsTemperatureConfig for AuradineV1 {}
+
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
@@ -1814,5 +1816,3 @@ mod tests {
         Ok(())
     }
 }
-
-impl SupportsTemperatureConfig for AuradineV1 {}
