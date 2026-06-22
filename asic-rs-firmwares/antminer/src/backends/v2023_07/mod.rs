@@ -1170,6 +1170,11 @@ impl SupportsFanConfig for AntMinerV202307 {
     }
 }
 
+impl GetThrottle for AntMinerV202307 {}
+impl SetThrottle for AntMinerV202307 {}
+
+impl SupportsPresets for AntMinerV202307 {}
+
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
@@ -1288,8 +1293,3 @@ mod tests {
         Ok(())
     }
 }
-
-impl GetThrottle for AntMinerV202307 {}
-impl SetThrottle for AntMinerV202307 {}
-
-impl SupportsPresets for AntMinerV202307 {}
