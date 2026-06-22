@@ -1,0 +1,66 @@
+name: Build wheels (fork)
+
+# Fork-only: build the Linux x86_64 wheels (glibc + musl, all interpreters incl.
+# cp314) from this branch and attach them to a pre-release on THIS fork. Used to
+# test the VNish hydro patch on Home Assistant without going through PyPI (we do
+# not publish under the upstream `pyasic-rs` name). Trigger manually.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+      # Only what Home Assistant needs: HA Core runs on Alpine (musl libc),
+      # x86_64, CPython 3.14 -> a single musllinux_1_2 cp314 wheel. Keeps the
+      # build fast (no full interpreter matrix / no manylinux).
+      #
+      # Also gate by miner family (asic-rs#278): --no-default-features drops the
+      # default firmware set, --features re-adds only what our test fleet runs
+      # (Antminer hardware on VNish + BraiinsOS). The factory registry and the
+      # lib re-exports are already #[cfg(feature)]-gated, so this excludes the
+      # ~9 unused firmware crates (+ their make deps) and cuts compile time.
+      # NB: `python` must be listed explicitly here — passing --features on the
+      # CLI replaces pyproject's [tool.maturin] features=["python"], so without
+      # it pyo3 isn't built and maturin fails with "find a python interpreter".
+      - name: Build wheel (cp314, x86_64, musllinux — HA target, gated firmwares)
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64
+          args: >-
+            --release --out dist --interpreter 3.14
+            --no-default-features --features python,core,proto,antminer,vnish,braiins
+          sccache: true
+          manylinux: musllinux_1_2
+      - name: List built wheels
+        run: ls -la dist
+      # Persist the wheels as a run artifact BEFORE publishing, so they survive
+      # even if a later step (publish/release) fails or the run is cancelled —
+      # no need to burn a full rebuild just to recover them.
+      - name: Upload wheels as run artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels
+          path: dist/*
+          if-no-files-found: error
+      - name: Publish wheels to a fork pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: wheels-vnish-${{ github.run_number }}
+          name: VNish-patched pyasic_rs wheels (fork build ${{ github.run_number }})
+          body: |
+            Fork build of pyasic_rs with the VNish hydro fix
+            (model alias + per-board water temps + fluid temperature).
+            Firmware-gated build (antminer/vnish/braiins only, see asic-rs#278).
+            NOT an official pyasic-rs release. For Home-Assistant testing only.
+          prerelease: true
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
