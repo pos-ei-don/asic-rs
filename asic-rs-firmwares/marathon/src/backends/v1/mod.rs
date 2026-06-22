@@ -1159,6 +1159,11 @@ impl SupportsFanConfig for MaraV1 {
     }
 }
 
+impl GetThrottle for MaraV1 {}
+impl SetThrottle for MaraV1 {}
+
+impl SupportsPresets for MaraV1 {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1253,8 +1258,3 @@ mod tests {
         Ok(())
     }
 }
-
-impl GetThrottle for MaraV1 {}
-impl SetThrottle for MaraV1 {}
-
-impl SupportsPresets for MaraV1 {}

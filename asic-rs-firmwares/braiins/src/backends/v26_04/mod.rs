@@ -860,6 +860,11 @@ impl SupportsFanConfig for BraiinsV2604 {
     }
 }
 
+impl GetThrottle for BraiinsV2604 {}
+impl SetThrottle for BraiinsV2604 {}
+
+impl SupportsPresets for BraiinsV2604 {}
+
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;
@@ -1038,8 +1043,3 @@ mod tests {
         );
     }
 }
-
-impl GetThrottle for BraiinsV2604 {}
-impl SetThrottle for BraiinsV2604 {}
-
-impl SupportsPresets for BraiinsV2604 {}
