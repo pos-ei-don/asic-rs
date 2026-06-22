@@ -580,6 +580,9 @@ impl SupportsFanConfig for Bitaxe200 {
     }
 }
 
+impl GetThrottle for Bitaxe200 {}
+impl SetThrottle for Bitaxe200 {}
+
 #[cfg(test)]
 mod tests {
     use asic_rs_core::test::api::MockAPIClient;
@@ -672,6 +675,3 @@ mod tests {
         )
     }
 }
-
-impl GetThrottle for Bitaxe200 {}
-impl SetThrottle for Bitaxe200 {}

@@ -710,6 +710,9 @@ impl SupportsFanConfig for AvalonQMiner {
     }
 }
 
+impl GetThrottle for AvalonQMiner {}
+impl SetThrottle for AvalonQMiner {}
+
 #[cfg(test)]
 mod tests {
     use asic_rs_core::test::api::MockAPIClient;
@@ -787,6 +790,3 @@ mod tests {
         Ok(())
     }
 }
-
-impl GetThrottle for AvalonQMiner {}
-impl SetThrottle for AvalonQMiner {}

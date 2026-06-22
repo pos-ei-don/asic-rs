@@ -841,6 +841,9 @@ impl HasDefaultAuth for SealMinerV2025 {
     }
 }
 
+impl GetThrottle for SealMinerV2025 {}
+impl SetThrottle for SealMinerV2025 {}
+
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;
@@ -967,6 +970,3 @@ mod tests {
         assert_eq!(miner_data.pools[0].len(), 1);
     }
 }
-
-impl GetThrottle for SealMinerV2025 {}
-impl SetThrottle for SealMinerV2025 {}

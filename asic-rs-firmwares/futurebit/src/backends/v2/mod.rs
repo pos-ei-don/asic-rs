@@ -804,6 +804,9 @@ impl HasDefaultAuth for ApolloV2 {
     }
 }
 
+impl GetThrottle for ApolloV2 {}
+impl SetThrottle for ApolloV2 {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -909,6 +912,3 @@ mod tests {
         );
     }
 }
-
-impl GetThrottle for ApolloV2 {}
-impl SetThrottle for ApolloV2 {}

@@ -965,6 +965,9 @@ impl SupportsFanConfig for BraiinsV2505 {
     }
 }
 
+impl GetThrottle for BraiinsV2505 {}
+impl SetThrottle for BraiinsV2505 {}
+
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;
@@ -1148,6 +1151,3 @@ mod tests {
         assert!(miner_data.expected_hashrate.is_some());
     }
 }
-
-impl GetThrottle for BraiinsV2505 {}
-impl SetThrottle for BraiinsV2505 {}

@@ -1571,6 +1571,9 @@ impl HasAuth for PowerPlayV1 {
     }
 }
 
+impl GetThrottle for PowerPlayV1 {}
+impl SetThrottle for PowerPlayV1 {}
+
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
@@ -1874,6 +1877,3 @@ mod tests {
         Ok(())
     }
 }
-
-impl GetThrottle for PowerPlayV1 {}
-impl SetThrottle for PowerPlayV1 {}

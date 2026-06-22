@@ -1202,6 +1202,9 @@ impl SupportsFanConfig for LuxMinerV1 {
         false
     }
 }
+
+impl GetThrottle for LuxMinerV1 {}
+impl SetThrottle for LuxMinerV1 {}
 #[cfg(test)]
 mod tests {
     use std::sync::{Arc, Mutex};
@@ -1589,6 +1592,3 @@ mod tests {
         Ok(())
     }
 }
-
-impl GetThrottle for LuxMinerV1 {}
-impl SetThrottle for LuxMinerV1 {}

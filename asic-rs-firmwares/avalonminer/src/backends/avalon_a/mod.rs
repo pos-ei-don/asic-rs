@@ -766,6 +766,9 @@ impl SupportsFanConfig for AvalonAMiner {
     }
 }
 
+impl GetThrottle for AvalonAMiner {}
+impl SetThrottle for AvalonAMiner {}
+
 #[cfg(test)]
 mod tests {
     use asic_rs_core::data::board::MinerControlBoard;
@@ -869,6 +872,3 @@ mod tests {
         Ok(())
     }
 }
-
-impl GetThrottle for AvalonAMiner {}
-impl SetThrottle for AvalonAMiner {}

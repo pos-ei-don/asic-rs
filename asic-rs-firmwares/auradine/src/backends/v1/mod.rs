@@ -1432,6 +1432,9 @@ impl SupportsFanConfig for AuradineV1 {
     }
 }
 
+impl GetThrottle for AuradineV1 {}
+impl SetThrottle for AuradineV1 {}
+
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
@@ -1814,6 +1817,3 @@ mod tests {
         Ok(())
     }
 }
-
-impl GetThrottle for AuradineV1 {}
-impl SetThrottle for AuradineV1 {}
