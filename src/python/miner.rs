@@ -650,10 +650,7 @@ impl Miner {
         })
     }
     /// Await the currently selected preset name, if any.
-    pub fn get_current_preset<'a>(
-        &self,
-        py: Python<'a>,
-    ) -> PyResult<PyAwaitable<Option<String>>> {
+    pub fn get_current_preset<'a>(&self, py: Python<'a>) -> PyResult<PyAwaitable<Option<String>>> {
         let inner = Arc::clone(&self.inner);
         future_into_py(py, async move {
             let inner = inner.read().await;

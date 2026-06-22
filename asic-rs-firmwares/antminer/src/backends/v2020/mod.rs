@@ -1236,6 +1236,11 @@ impl SupportsFanConfig for AntMinerV2020 {
     }
 }
 
+impl GetThrottle for AntMinerV2020 {}
+impl SetThrottle for AntMinerV2020 {}
+
+impl SupportsPresets for AntMinerV2020 {}
+
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
@@ -1354,8 +1359,3 @@ mod tests {
         Ok(())
     }
 }
-
-impl GetThrottle for AntMinerV2020 {}
-impl SetThrottle for AntMinerV2020 {}
-
-impl SupportsPresets for AntMinerV2020 {}
