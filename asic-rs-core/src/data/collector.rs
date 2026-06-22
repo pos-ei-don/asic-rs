@@ -77,6 +77,12 @@ pub enum DataField {
     /// Manual throttle level as a percent of full power (100 = unthrottled).
     #[cfg_attr(feature = "python", pydantic(value = "Throttle"))]
     Throttle,
+    /// Configured minimum coolant/startup temperature (won't start below this).
+    #[cfg_attr(feature = "python", pydantic(value = "MinStartupTemperature"))]
+    MinStartupTemperature,
+    /// Configured temperature at/above which the miner protects itself.
+    #[cfg_attr(feature = "python", pydantic(value = "RestartTemperature"))]
+    RestartTemperature,
     /// Configured tuning target (power or hashrate).
     #[cfg_attr(feature = "python", pydantic(value = "TuningTarget"))]
     TuningTarget,

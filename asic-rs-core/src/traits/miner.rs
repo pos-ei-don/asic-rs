@@ -247,6 +247,16 @@ impl<
         let expected_hashrate = self.parse_expected_hashrate(&data);
         let wattage = self.parse_wattage(&data);
         let throttle_percent = self.parse_throttle(&data);
+        // Configured thermal limits are simple scalars a backend points to (°C),
+        // read directly here rather than via per-backend parse traits.
+        let min_startup_temperature = data
+            .get(&DataField::MinStartupTemperature)
+            .and_then(|v| v.as_f64())
+            .map(Temperature::from_celsius);
+        let restart_temperature = data
+            .get(&DataField::RestartTemperature)
+            .and_then(|v| v.as_f64())
+            .map(Temperature::from_celsius);
         let tuning_target = self.parse_tuning_target(&data);
         let scaled_tuning_target = self.parse_scaled_tuning_target(&data);
         let fluid_temperature = self.parse_fluid_temperature(&data);
@@ -338,6 +348,8 @@ impl<
             // Power information
             wattage,
             throttle_percent,
+            min_startup_temperature,
+            restart_temperature,
             tuning_target,
             scaled_tuning_target,
             efficiency,

@@ -116,6 +116,14 @@ pub struct MinerData {
     pub wattage: Option<Power>,
     /// The current manual throttle level as a percent of full power (100 = unthrottled), where supported
     pub throttle_percent: Option<u8>,
+    /// The configured minimum coolant/startup temperature (won't start mining below it). Constant config, where supported.
+    #[serde(default, serialize_with = "serialize_temperature")]
+    #[cfg_attr(feature = "python", pydantic(default = None))]
+    pub min_startup_temperature: Option<Temperature>,
+    /// The configured temperature at/above which the miner protects itself (restart/shutdown). Constant config, where supported.
+    #[serde(default, serialize_with = "serialize_temperature")]
+    #[cfg_attr(feature = "python", pydantic(default = None))]
+    pub restart_temperature: Option<Temperature>,
     /// The current tuning target of the miner, such as power target or hashrate target
     pub tuning_target: Option<TuningTarget>,
     /// The current tuning target adjusted by scaling settings, when available.

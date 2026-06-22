@@ -287,6 +287,22 @@ impl GetDataLocations for VnishV120 {
                     tag: None,
                 },
             )],
+            DataField::MinStartupTemperature => vec![(
+                WEB_SUMMARY,
+                DataExtractor {
+                    func: get_by_pointer,
+                    key: Some("/miner/cooling/min_startup_water_temp"),
+                    tag: None,
+                },
+            )],
+            DataField::RestartTemperature => vec![(
+                WEB_SUMMARY,
+                DataExtractor {
+                    func: get_by_pointer,
+                    key: Some("/miner/misc/restart_temp"),
+                    tag: None,
+                },
+            )],
             _ => vec![],
         }
     }
