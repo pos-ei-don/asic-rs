@@ -2,10 +2,7 @@
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[cfg_attr(
-    feature = "python",
-    pyclass(skip_from_py_object, get_all, module = "asic_rs")
-)]
+#[cfg_attr(feature = "python", pyclass(get_all, module = "asic_rs"))]
 #[cfg_attr(feature = "python", asic_rs_pydantic::py_pydantic_model)]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 /// Configured thermal limits of the miner (°C).
