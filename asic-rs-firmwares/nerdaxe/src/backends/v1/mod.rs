@@ -568,3 +568,5 @@ impl SupportsFanConfig for NerdAxeV1 {
 
 impl GetThrottle for NerdAxeV1 {}
 impl SetThrottle for NerdAxeV1 {}
+
+impl SupportsPresets for NerdAxeV1 {}

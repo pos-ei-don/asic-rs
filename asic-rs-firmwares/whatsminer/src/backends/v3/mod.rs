@@ -1203,3 +1203,5 @@ mod integration_tests {
 
 impl GetThrottle for WhatsMinerV3 {}
 impl SetThrottle for WhatsMinerV3 {}
+
+impl SupportsPresets for WhatsMinerV3 {}

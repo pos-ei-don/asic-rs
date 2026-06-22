@@ -912,3 +912,5 @@ mod tests {
 
 impl GetThrottle for ApolloV2 {}
 impl SetThrottle for ApolloV2 {}
+
+impl SupportsPresets for ApolloV2 {}

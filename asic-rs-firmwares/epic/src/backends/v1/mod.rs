@@ -1877,3 +1877,5 @@ mod tests {
 
 impl GetThrottle for PowerPlayV1 {}
 impl SetThrottle for PowerPlayV1 {}
+
+impl SupportsPresets for PowerPlayV1 {}

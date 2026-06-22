@@ -4,8 +4,8 @@ use super::typing::{PyAwaitable, future_into_py};
 use asic_rs_core::data::collector::DataField;
 use asic_rs_core::{
     config::{
-        fan::FanConfig, pools::PoolGroupConfig as PoolGroup, scaling::ScalingConfig,
-        tuning::TuningConfig,
+        fan::FanConfig, pools::PoolGroupConfig as PoolGroup, preset::PresetInfo,
+        scaling::ScalingConfig, tuning::TuningConfig,
     },
     data::{
         board::BoardData,
@@ -174,6 +174,11 @@ impl Miner {
     #[getter]
     fn supports_set_throttle(&self, py: Python<'_>) -> bool {
         self.with_miner(py, |miner| miner.supports_set_throttle())
+    }
+    /// Whether this miner exposes named autotune/overclock presets.
+    #[getter]
+    fn supports_presets(&self, py: Python<'_>) -> bool {
+        self.with_miner(py, |miner| miner.supports_presets())
     }
     /// Whether this miner supports restart commands.
     #[getter]
@@ -634,6 +639,37 @@ impl Miner {
         future_into_py(py, async move {
             let inner = inner.read().await;
             Ok(inner.set_throttle(percent).await.ok())
+        })
+    }
+    /// Await the firmware's available autotune/overclock presets.
+    pub fn get_presets<'a>(&self, py: Python<'a>) -> PyResult<PyAwaitable<Vec<PresetInfo>>> {
+        let inner = Arc::clone(&self.inner);
+        future_into_py(py, async move {
+            let inner = inner.read().await;
+            Ok(inner.get_presets().await)
+        })
+    }
+    /// Await the currently selected preset name, if any.
+    pub fn get_current_preset<'a>(
+        &self,
+        py: Python<'a>,
+    ) -> PyResult<PyAwaitable<Option<String>>> {
+        let inner = Arc::clone(&self.inner);
+        future_into_py(py, async move {
+            let inner = inner.read().await;
+            Ok(inner.get_current_preset().await)
+        })
+    }
+    /// Select a preset by its canonical name.
+    pub fn set_preset<'a>(
+        &self,
+        py: Python<'a>,
+        name: String,
+    ) -> PyResult<PyAwaitable<Option<bool>>> {
+        let inner = Arc::clone(&self.inner);
+        future_into_py(py, async move {
+            let inner = inner.read().await;
+            Ok(inner.set_preset(name).await.ok())
         })
     }
     /// Replace the configured mining pool groups.

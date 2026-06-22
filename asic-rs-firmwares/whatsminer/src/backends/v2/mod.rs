@@ -1207,3 +1207,5 @@ mod integration_tests {
 
 impl GetThrottle for WhatsMinerV2 {}
 impl SetThrottle for WhatsMinerV2 {}
+
+impl SupportsPresets for WhatsMinerV2 {}

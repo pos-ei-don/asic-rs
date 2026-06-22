@@ -14,6 +14,7 @@ use crate::{
         collector::{ConfigCollector, ConfigField, ConfigLocation},
         fan::FanConfig,
         pools::PoolGroupConfig,
+        preset::PresetInfo,
         scaling::ScalingConfig,
         tuning::TuningConfig,
     },
@@ -41,12 +42,24 @@ pub trait MinerConstructor {
 }
 
 pub trait Miner:
-    GetMinerData + HasMinerControl + SupportsConfigs + UpgradeFirmware + HasAuth + HasDefaultAuth
+    GetMinerData
+    + HasMinerControl
+    + SupportsConfigs
+    + SupportsPresets
+    + UpgradeFirmware
+    + HasAuth
+    + HasDefaultAuth
 {
 }
 
 impl<
-    T: GetMinerData + HasMinerControl + SupportsConfigs + UpgradeFirmware + HasAuth + HasDefaultAuth,
+    T: GetMinerData
+        + HasMinerControl
+        + SupportsConfigs
+        + SupportsPresets
+        + UpgradeFirmware
+        + HasAuth
+        + HasDefaultAuth,
 > Miner for T
 {
 }
@@ -782,6 +795,27 @@ pub trait SetThrottle {
     }
     /// Defaults to `false`; backends that support throttling override this.
     fn supports_set_throttle(&self) -> bool {
+        false
+    }
+}
+
+#[async_trait]
+pub trait SupportsPresets {
+    /// List the firmware's available autotune/overclock presets.
+    async fn get_presets(&self) -> Vec<PresetInfo> {
+        Vec::new()
+    }
+    /// The currently selected preset name, if any.
+    async fn get_current_preset(&self) -> Option<String> {
+        None
+    }
+    /// Select a preset by its canonical name.
+    #[allow(unused_variables)]
+    async fn set_preset(&self, name: String) -> anyhow::Result<bool> {
+        anyhow::bail!("Selecting presets is not supported on this platform");
+    }
+    /// Defaults to `false`; backends with named presets override this.
+    fn supports_presets(&self) -> bool {
         false
     }
 }

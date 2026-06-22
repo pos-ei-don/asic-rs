@@ -566,3 +566,5 @@ impl SupportsFanConfig for Bitaxe290 {
 
 impl GetThrottle for Bitaxe290 {}
 impl SetThrottle for Bitaxe290 {}
+
+impl SupportsPresets for Bitaxe290 {}

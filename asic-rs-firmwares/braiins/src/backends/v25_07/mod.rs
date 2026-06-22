@@ -1150,3 +1150,5 @@ mod tests {
 
 impl GetThrottle for BraiinsV2507 {}
 impl SetThrottle for BraiinsV2507 {}
+
+impl SupportsPresets for BraiinsV2507 {}

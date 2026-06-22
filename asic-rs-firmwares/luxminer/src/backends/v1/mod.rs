@@ -1592,3 +1592,5 @@ mod tests {
 
 impl GetThrottle for LuxMinerV1 {}
 impl SetThrottle for LuxMinerV1 {}
+
+impl SupportsPresets for LuxMinerV1 {}

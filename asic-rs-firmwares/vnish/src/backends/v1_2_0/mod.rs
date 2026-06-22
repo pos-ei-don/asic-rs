@@ -5,6 +5,7 @@ use asic_rs_core::{
     config::{
         collector::{ConfigCollector, ConfigField, ConfigLocation},
         pools::PoolGroupConfig,
+        preset::PresetInfo,
     },
     data::{
         board::{BoardData, ChipData, MinerControlBoard},
@@ -856,6 +857,78 @@ impl SetThrottle for VnishV120 {
         let percent = percent.clamp(20, 100);
         self.web.throttle(percent).await?;
         Ok(true)
+    }
+}
+
+#[async_trait]
+impl SupportsPresets for VnishV120 {
+    fn supports_presets(&self) -> bool {
+        true
+    }
+
+    /// VNish exposes its autotune presets at `/autotune/presets`, each
+    /// `{ "name": "5560", "pretty": "5560 watt ~ 175 TH", "status": "tuned" }`.
+    async fn get_presets(&self) -> Vec<PresetInfo> {
+        let Ok(presets) = self.web.autotune_presets().await else {
+            return Vec::new();
+        };
+        let list = presets
+            .as_array()
+            .cloned()
+            .or_else(|| {
+                presets
+                    .get("presets")
+                    .and_then(|p| p.as_array())
+                    .cloned()
+            })
+            .unwrap_or_default();
+        list.iter()
+            .filter_map(|p| {
+                let name = p.get("name")?.as_str()?.to_string();
+                Some(PresetInfo {
+                    name,
+                    pretty: p.get("pretty").and_then(|v| v.as_str()).map(String::from),
+                    status: p.get("status").and_then(|v| v.as_str()).map(String::from),
+                })
+            })
+            .collect()
+    }
+
+    /// The active preset is `miner.overclock.preset` in `/settings`.
+    async fn get_current_preset(&self) -> Option<String> {
+        let settings = self.web.settings().await.ok()?;
+        let preset = settings.pointer("/miner/overclock/preset")?;
+        preset
+            .as_str()
+            .map(String::from)
+            .or_else(|| preset.as_i64().map(|n| n.to_string()))
+    }
+
+    /// Select a preset: set `miner.overclock.preset` and verify it took.
+    async fn set_preset(&self, name: String) -> anyhow::Result<bool> {
+        let mut settings = self.web.settings().await?;
+        {
+            let overclock = settings
+                .pointer_mut("/miner/overclock")
+                .ok_or_else(|| anyhow::anyhow!("settings missing miner.overclock"))?;
+            overclock["preset"] = json!(name);
+        }
+        let overclock = settings
+            .pointer("/miner/overclock")
+            .cloned()
+            .ok_or_else(|| anyhow::anyhow!("settings missing miner.overclock"))?;
+        self.web
+            .set_settings(json!({ "miner": { "overclock": overclock } }))
+            .await?;
+        let updated = self.web.settings().await?;
+        let applied = updated
+            .pointer("/miner/overclock/preset")
+            .and_then(|p| {
+                p.as_str()
+                    .map(String::from)
+                    .or_else(|| p.as_i64().map(|n| n.to_string()))
+            });
+        Ok(applied.as_deref() == Some(name.as_str()))
     }
 }
 

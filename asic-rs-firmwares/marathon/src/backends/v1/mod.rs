@@ -1256,3 +1256,5 @@ mod tests {
 
 impl GetThrottle for MaraV1 {}
 impl SetThrottle for MaraV1 {}
+
+impl SupportsPresets for MaraV1 {}

@@ -1291,3 +1291,5 @@ mod tests {
 
 impl GetThrottle for AntMinerV202307 {}
 impl SetThrottle for AntMinerV202307 {}
+
+impl SupportsPresets for AntMinerV202307 {}

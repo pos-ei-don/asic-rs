@@ -790,3 +790,5 @@ mod tests {
 
 impl GetThrottle for AvalonQMiner {}
 impl SetThrottle for AvalonQMiner {}
+
+impl SupportsPresets for AvalonQMiner {}

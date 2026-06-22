@@ -1371,3 +1371,5 @@ mod tests {
 
 impl GetThrottle for ProtoV1 {}
 impl SetThrottle for ProtoV1 {}
+
+impl SupportsPresets for ProtoV1 {}

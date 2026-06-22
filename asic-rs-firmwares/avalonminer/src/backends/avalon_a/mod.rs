@@ -872,3 +872,5 @@ mod tests {
 
 impl GetThrottle for AvalonAMiner {}
 impl SetThrottle for AvalonAMiner {}
+
+impl SupportsPresets for AvalonAMiner {}

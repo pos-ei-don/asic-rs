@@ -1817,3 +1817,5 @@ mod tests {
 
 impl GetThrottle for AuradineV1 {}
 impl SetThrottle for AuradineV1 {}
+
+impl SupportsPresets for AuradineV1 {}

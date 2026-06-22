@@ -970,3 +970,5 @@ mod tests {
 
 impl GetThrottle for SealMinerV2025 {}
 impl SetThrottle for SealMinerV2025 {}
+
+impl SupportsPresets for SealMinerV2025 {}
