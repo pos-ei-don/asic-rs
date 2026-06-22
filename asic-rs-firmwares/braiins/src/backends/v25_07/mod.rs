@@ -845,6 +845,11 @@ impl SupportsFanConfig for BraiinsV2507 {
     }
 }
 
+impl GetThrottle for BraiinsV2507 {}
+impl SetThrottle for BraiinsV2507 {}
+
+impl SupportsPresets for BraiinsV2507 {}
+
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;
@@ -1147,8 +1152,3 @@ mod tests {
         );
     }
 }
-
-impl GetThrottle for BraiinsV2507 {}
-impl SetThrottle for BraiinsV2507 {}
-
-impl SupportsPresets for BraiinsV2507 {}
