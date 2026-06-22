@@ -967,3 +967,5 @@ mod tests {
         assert_eq!(miner_data.pools[0].len(), 1);
     }
 }
+
+impl SupportsTemperatureConfig for SealMinerV2025 {}

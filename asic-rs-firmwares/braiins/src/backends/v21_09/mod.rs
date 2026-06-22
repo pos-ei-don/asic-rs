@@ -1146,3 +1146,5 @@ mod tests {
         assert_eq!(miner_data.pools[1].quota, 1);
     }
 }
+
+impl SupportsTemperatureConfig for BraiinsV2109 {}

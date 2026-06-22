@@ -5,6 +5,7 @@ use asic_rs_core::{
     config::{
         collector::{ConfigCollector, ConfigField, ConfigLocation},
         pools::PoolGroupConfig,
+        temperature::TemperatureConfig,
     },
     data::{
         board::{BoardData, ChipData, MinerControlBoard},
@@ -945,6 +946,35 @@ impl FactoryReset for VnishV120 {
 impl SupportsScalingConfig for VnishV120 {
     fn supports_scaling_config(&self) -> bool {
         false
+    }
+}
+
+#[async_trait]
+impl SupportsTemperatureConfig for VnishV120 {
+    fn supports_temperature_config(&self) -> bool {
+        true
+    }
+
+    /// VNish reports configured thermal limits in `/summary`: the minimum
+    /// startup water temperature and the self-protection restart temperature.
+    /// `target`/`hot` are not exposed via `/summary` (left `None` = not reported,
+    /// not "no limit").
+    async fn get_temperature_config(&self) -> anyhow::Result<TemperatureConfig> {
+        const WEB_SUMMARY: MinerCommand = MinerCommand::WebAPI {
+            command: "summary",
+            parameters: None,
+        };
+        let summary = self.web.get_api_result(&WEB_SUMMARY).await?;
+        Ok(TemperatureConfig {
+            target: None,
+            hot: None,
+            danger: summary
+                .pointer("/miner/misc/restart_temp")
+                .and_then(|v| v.as_f64()),
+            minimum: summary
+                .pointer("/miner/cooling/min_startup_water_temp")
+                .and_then(|v| v.as_f64()),
+        })
     }
 }
 

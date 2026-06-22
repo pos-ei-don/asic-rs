@@ -1354,3 +1354,5 @@ mod tests {
         Ok(())
     }
 }
+
+impl SupportsTemperatureConfig for AntMinerV2020 {}

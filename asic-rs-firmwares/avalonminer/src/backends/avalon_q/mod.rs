@@ -787,3 +787,5 @@ mod tests {
         Ok(())
     }
 }
+
+impl SupportsTemperatureConfig for AvalonQMiner {}

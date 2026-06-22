@@ -1288,3 +1288,5 @@ mod tests {
         Ok(())
     }
 }
+
+impl SupportsTemperatureConfig for AntMinerV202307 {}

@@ -1814,3 +1814,5 @@ mod tests {
         Ok(())
     }
 }
+
+impl SupportsTemperatureConfig for AuradineV1 {}

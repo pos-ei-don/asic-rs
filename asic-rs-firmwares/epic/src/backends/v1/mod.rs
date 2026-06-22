@@ -1874,3 +1874,5 @@ mod tests {
         Ok(())
     }
 }
+
+impl SupportsTemperatureConfig for PowerPlayV1 {}

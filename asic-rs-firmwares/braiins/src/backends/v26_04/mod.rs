@@ -1038,3 +1038,5 @@ mod tests {
         );
     }
 }
+
+impl SupportsTemperatureConfig for BraiinsV2604 {}

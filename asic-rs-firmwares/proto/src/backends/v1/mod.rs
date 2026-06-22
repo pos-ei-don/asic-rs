@@ -1368,3 +1368,5 @@ mod tests {
         assert_eq!(messages[1].component, Some(MinerComponent::power_supply(0)));
     }
 }
+
+impl SupportsTemperatureConfig for ProtoV1 {}

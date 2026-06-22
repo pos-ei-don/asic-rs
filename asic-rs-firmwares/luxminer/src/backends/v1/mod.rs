@@ -1589,3 +1589,5 @@ mod tests {
         Ok(())
     }
 }
+
+impl SupportsTemperatureConfig for LuxMinerV1 {}

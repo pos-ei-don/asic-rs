@@ -1143,3 +1143,5 @@ mod tests {
         assert!(miner_data.expected_hashrate.is_some());
     }
 }
+
+impl SupportsTemperatureConfig for BraiinsV2503 {}

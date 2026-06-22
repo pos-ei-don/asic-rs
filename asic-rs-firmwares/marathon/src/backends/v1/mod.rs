@@ -1253,3 +1253,5 @@ mod tests {
         Ok(())
     }
 }
+
+impl SupportsTemperatureConfig for MaraV1 {}

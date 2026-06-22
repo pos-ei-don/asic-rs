@@ -869,3 +869,5 @@ mod tests {
         Ok(())
     }
 }
+
+impl SupportsTemperatureConfig for AvalonAMiner {}

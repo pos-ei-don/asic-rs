@@ -909,3 +909,5 @@ mod tests {
         );
     }
 }
+
+impl SupportsTemperatureConfig for ApolloV2 {}

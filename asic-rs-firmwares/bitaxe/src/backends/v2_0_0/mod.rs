@@ -672,3 +672,5 @@ mod tests {
         )
     }
 }
+
+impl SupportsTemperatureConfig for Bitaxe200 {}
