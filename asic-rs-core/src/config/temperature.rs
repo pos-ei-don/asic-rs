@@ -50,30 +50,3 @@ impl TemperatureConfig {
         }
     }
 }
-
-#[cfg(feature = "python")]
-mod python_impls {
-    use asic_rs_pydantic::get_optional_field;
-    use pyo3::{Borrowed, PyAny, PyErr, PyResult, conversion::FromPyObject, types::PyAnyMethods};
-
-    use super::TemperatureConfig;
-
-    impl FromPyObject<'_, '_> for TemperatureConfig {
-        type Error = PyErr;
-
-        fn extract(obj: Borrowed<'_, '_, PyAny>) -> PyResult<Self> {
-            let opt = |name: &str| -> PyResult<Option<f64>> {
-                Ok(get_optional_field(&obj, name)?
-                    .map(|value| value.extract())
-                    .transpose()?
-                    .flatten())
-            };
-            Ok(TemperatureConfig {
-                target: opt("target")?,
-                hot: opt("hot")?,
-                danger: opt("danger")?,
-                minimum: opt("minimum")?,
-            })
-        }
-    }
-}

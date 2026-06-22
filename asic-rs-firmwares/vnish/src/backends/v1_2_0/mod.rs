@@ -3,7 +3,7 @@ use std::{collections::HashMap, net::IpAddr, str::FromStr, time::Duration};
 use anyhow;
 use asic_rs_core::{
     config::{
-        collector::{ConfigCollector, ConfigField, ConfigLocation},
+        collector::{ConfigCollector, ConfigExtractor, ConfigField, ConfigLocation},
         pools::PoolGroupConfig,
         temperature::TemperatureConfig,
     },
@@ -61,9 +61,22 @@ impl APIClient for VnishV120 {
 }
 
 impl GetConfigsLocations for VnishV120 {
-    #[allow(unused_variables)]
     fn get_configs_locations(&self, data_field: ConfigField) -> Vec<ConfigLocation> {
-        vec![]
+        const WEB_SUMMARY: MinerCommand = MinerCommand::WebAPI {
+            command: "summary",
+            parameters: None,
+        };
+        match data_field {
+            ConfigField::Temperature => vec![(
+                WEB_SUMMARY,
+                ConfigExtractor {
+                    func: get_by_pointer,
+                    key: Some("/miner"),
+                    tag: None,
+                },
+            )],
+            _ => vec![],
+        }
     }
 }
 
@@ -959,20 +972,19 @@ impl SupportsTemperatureConfig for VnishV120 {
     /// startup water temperature and the self-protection restart temperature.
     /// `target`/`hot` are not exposed via `/summary` (left `None` = not reported,
     /// not "no limit").
-    async fn get_temperature_config(&self) -> anyhow::Result<TemperatureConfig> {
-        const WEB_SUMMARY: MinerCommand = MinerCommand::WebAPI {
-            command: "summary",
-            parameters: None,
-        };
-        let summary = self.web.get_api_result(&WEB_SUMMARY).await?;
+    fn parse_temperature_config(
+        &self,
+        data: &HashMap<ConfigField, Value>,
+    ) -> anyhow::Result<TemperatureConfig> {
+        let miner = data
+            .get(&ConfigField::Temperature)
+            .ok_or_else(|| anyhow::anyhow!("No temperature config returned by miner"))?;
         Ok(TemperatureConfig {
             target: None,
             hot: None,
-            danger: summary
-                .pointer("/miner/misc/restart_temp")
-                .and_then(|v| v.as_f64()),
-            minimum: summary
-                .pointer("/miner/cooling/min_startup_water_temp")
+            danger: miner.pointer("/misc/restart_temp").and_then(|v| v.as_f64()),
+            minimum: miner
+                .pointer("/cooling/min_startup_water_temp")
                 .and_then(|v| v.as_f64()),
         })
     }
