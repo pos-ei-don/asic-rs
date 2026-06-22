@@ -967,3 +967,6 @@ mod tests {
         assert_eq!(miner_data.pools[0].len(), 1);
     }
 }
+
+impl GetThrottle for SealMinerV2025 {}
+impl SetThrottle for SealMinerV2025 {}

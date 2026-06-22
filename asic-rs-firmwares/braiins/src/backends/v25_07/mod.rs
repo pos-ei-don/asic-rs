@@ -1147,3 +1147,6 @@ mod tests {
         );
     }
 }
+
+impl GetThrottle for BraiinsV2507 {}
+impl SetThrottle for BraiinsV2507 {}

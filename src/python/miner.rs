@@ -170,6 +170,11 @@ impl Miner {
     fn supports_set_power_limit(&self, py: Python<'_>) -> bool {
         self.with_miner(py, |miner| miner.supports_set_power_limit())
     }
+    /// Whether this miner supports setting a manual throttle.
+    #[getter]
+    fn supports_set_throttle(&self, py: Python<'_>) -> bool {
+        self.with_miner(py, |miner| miner.supports_set_throttle())
+    }
     /// Whether this miner supports restart commands.
     #[getter]
     fn supports_restart(&self, py: Python<'_>) -> bool {
@@ -406,6 +411,14 @@ impl Miner {
             Ok(data.map(|w| w.as_watts()))
         })
     }
+    /// Await the current manual throttle percent (100 = unthrottled), if exposed.
+    pub fn get_throttle<'a>(&self, py: Python<'a>) -> PyResult<PyAwaitable<Option<u8>>> {
+        let inner = Arc::clone(&self.inner);
+        future_into_py(py, async move {
+            let inner = inner.read().await;
+            Ok(inner.get_throttle().await)
+        })
+    }
     /// Await the active tuning target, if exposed by the firmware.
     pub fn get_tuning_target<'a>(
         &self,
@@ -609,6 +622,18 @@ impl Miner {
         future_into_py(py, async move {
             let inner = inner.read().await;
             Ok(inner.set_power_limit(Power::from_watts(watts)).await.ok())
+        })
+    }
+    /// Set a manual throttle as a percent of full power (100 = unthrottled).
+    pub fn set_throttle<'a>(
+        &self,
+        py: Python<'a>,
+        percent: u8,
+    ) -> PyResult<PyAwaitable<Option<bool>>> {
+        let inner = Arc::clone(&self.inner);
+        future_into_py(py, async move {
+            let inner = inner.read().await;
+            Ok(inner.set_throttle(percent).await.ok())
         })
     }
     /// Replace the configured mining pool groups.

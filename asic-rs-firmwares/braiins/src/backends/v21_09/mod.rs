@@ -1146,3 +1146,6 @@ mod tests {
         assert_eq!(miner_data.pools[1].quota, 1);
     }
 }
+
+impl GetThrottle for BraiinsV2109 {}
+impl SetThrottle for BraiinsV2109 {}

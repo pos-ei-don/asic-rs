@@ -1814,3 +1814,6 @@ mod tests {
         Ok(())
     }
 }
+
+impl GetThrottle for AuradineV1 {}
+impl SetThrottle for AuradineV1 {}

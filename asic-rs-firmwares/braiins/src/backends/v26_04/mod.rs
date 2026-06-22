@@ -1038,3 +1038,6 @@ mod tests {
         );
     }
 }
+
+impl GetThrottle for BraiinsV2604 {}
+impl SetThrottle for BraiinsV2604 {}

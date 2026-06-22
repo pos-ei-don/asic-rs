@@ -1589,3 +1589,6 @@ mod tests {
         Ok(())
     }
 }
+
+impl GetThrottle for LuxMinerV1 {}
+impl SetThrottle for LuxMinerV1 {}

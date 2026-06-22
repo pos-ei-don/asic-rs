@@ -1253,3 +1253,6 @@ mod tests {
         Ok(())
     }
 }
+
+impl GetThrottle for MaraV1 {}
+impl SetThrottle for MaraV1 {}

@@ -52,13 +52,22 @@ impl<
 }
 
 pub trait HasMinerControl:
-    SetFaultLight + SetPowerLimit + Restart + Resume + Pause + ChangePassword + FactoryReset + ReadLogs
+    SetFaultLight
+    + SetPowerLimit
+    + SetThrottle
+    + Restart
+    + Resume
+    + Pause
+    + ChangePassword
+    + FactoryReset
+    + ReadLogs
 {
 }
 
 impl<
     T: SetFaultLight
         + SetPowerLimit
+        + SetThrottle
         + Restart
         + Resume
         + Pause
@@ -128,6 +137,7 @@ pub trait GetMinerData:
     + GetPsuFans
     + GetFluidTemperature
     + GetWattage
+    + GetThrottle
     + GetTuningTarget
     + GetScaledTuningTarget
     + GetLightFlashing
@@ -186,6 +196,7 @@ impl<
         + GetPsuFans
         + GetFluidTemperature
         + GetWattage
+        + GetThrottle
         + GetTuningTarget
         + GetScaledTuningTarget
         + GetLightFlashing
@@ -222,6 +233,7 @@ impl<
         let hashrate = self.parse_hashrate(&data);
         let expected_hashrate = self.parse_expected_hashrate(&data);
         let wattage = self.parse_wattage(&data);
+        let throttle_percent = self.parse_throttle(&data);
         let tuning_target = self.parse_tuning_target(&data);
         let scaled_tuning_target = self.parse_scaled_tuning_target(&data);
         let fluid_temperature = self.parse_fluid_temperature(&data);
@@ -312,6 +324,7 @@ impl<
 
             // Power information
             wattage,
+            throttle_percent,
             tuning_target,
             scaled_tuning_target,
             efficiency,
@@ -620,6 +633,21 @@ pub trait GetWattage: CollectData {
     }
 }
 
+// Throttle
+#[async_trait]
+pub trait GetThrottle: CollectData {
+    #[tracing::instrument(level = "debug")]
+    async fn get_throttle(&self) -> Option<u8> {
+        let mut collector = self.get_collector();
+        let data = collector.collect(&[DataField::Throttle]).await;
+        self.parse_throttle(&data)
+    }
+    #[allow(unused_variables)]
+    fn parse_throttle(&self, data: &HashMap<DataField, Value>) -> Option<u8> {
+        None
+    }
+}
+
 // Tuning Target
 #[async_trait]
 pub trait GetTuningTarget: CollectData {
@@ -743,6 +771,19 @@ pub trait SetPowerLimit {
         anyhow::bail!("Setting power limit is not supported on this platform");
     }
     fn supports_set_power_limit(&self) -> bool;
+}
+
+#[async_trait]
+pub trait SetThrottle {
+    /// Set a manual throttle level as a percent of full power (100 = unthrottled).
+    #[allow(unused_variables)]
+    async fn set_throttle(&self, percent: u8) -> anyhow::Result<bool> {
+        anyhow::bail!("Setting throttle is not supported on this platform");
+    }
+    /// Defaults to `false`; backends that support throttling override this.
+    fn supports_set_throttle(&self) -> bool {
+        false
+    }
 }
 
 #[async_trait]

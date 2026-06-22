@@ -1368,3 +1368,6 @@ mod tests {
         assert_eq!(messages[1].component, Some(MinerComponent::power_supply(0)));
     }
 }
+
+impl GetThrottle for ProtoV1 {}
+impl SetThrottle for ProtoV1 {}

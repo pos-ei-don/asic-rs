@@ -869,3 +869,6 @@ mod tests {
         Ok(())
     }
 }
+
+impl GetThrottle for AvalonAMiner {}
+impl SetThrottle for AvalonAMiner {}

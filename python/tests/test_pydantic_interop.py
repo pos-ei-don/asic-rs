@@ -117,6 +117,7 @@ def minimal_miner_data(**overrides: object) -> dict[str, object]:
         "fluid_temperature": None,
         "outlet_fluid_temperature": None,
         "wattage": None,
+        "throttle_percent": None,
         "tuning_target": None,
         "scaled_tuning_target": None,
         "efficiency": None,

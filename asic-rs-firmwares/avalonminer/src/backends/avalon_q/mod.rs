@@ -787,3 +787,6 @@ mod tests {
         Ok(())
     }
 }
+
+impl GetThrottle for AvalonQMiner {}
+impl SetThrottle for AvalonQMiner {}

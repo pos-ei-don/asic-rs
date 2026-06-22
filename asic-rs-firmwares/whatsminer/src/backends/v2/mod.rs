@@ -1204,3 +1204,6 @@ mod integration_tests {
         Ok(())
     }
 }
+
+impl GetThrottle for WhatsMinerV2 {}
+impl SetThrottle for WhatsMinerV2 {}

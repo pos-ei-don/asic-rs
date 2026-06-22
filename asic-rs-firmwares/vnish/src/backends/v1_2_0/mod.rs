@@ -278,6 +278,14 @@ impl GetDataLocations for VnishV120 {
                     tag: None,
                 },
             )],
+            DataField::Throttle => vec![(
+                WEB_SUMMARY,
+                DataExtractor {
+                    func: get_by_pointer,
+                    key: Some("/miner/miner_status/throttled"),
+                    tag: None,
+                },
+            )],
             _ => vec![],
         }
     }
@@ -589,6 +597,13 @@ impl GetWattage for VnishV120 {
     }
 }
 
+impl GetThrottle for VnishV120 {
+    fn parse_throttle(&self, data: &HashMap<DataField, Value>) -> Option<u8> {
+        // `/miner/miner_status/throttled`: 100 = full power, <100 = throttled.
+        data.extract_map::<i64, _>(DataField::Throttle, |t| t.clamp(0, 100) as u8)
+    }
+}
+
 impl GetTuningTarget for VnishV120 {}
 
 impl GetScaledTuningTarget for VnishV120 {}
@@ -826,6 +841,21 @@ impl SetPowerLimit for VnishV120 {
                 .or_else(|| p.as_str().and_then(|s| s.parse().ok()))
         });
         Ok(applied == Some(preset_watts))
+    }
+}
+
+#[async_trait]
+impl SetThrottle for VnishV120 {
+    fn supports_set_throttle(&self) -> bool {
+        true
+    }
+
+    /// VNish throttles to a percent of full power via `POST /mining/throttle`
+    /// (100 = unthrottled). The firmware accepts 20..=100.
+    async fn set_throttle(&self, percent: u8) -> anyhow::Result<bool> {
+        let percent = percent.clamp(20, 100);
+        self.web.throttle(percent).await?;
+        Ok(true)
     }
 }
 

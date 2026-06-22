@@ -1288,3 +1288,6 @@ mod tests {
         Ok(())
     }
 }
+
+impl GetThrottle for AntMinerV202307 {}
+impl SetThrottle for AntMinerV202307 {}

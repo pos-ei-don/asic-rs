@@ -1143,3 +1143,6 @@ mod tests {
         assert!(miner_data.expected_hashrate.is_some());
     }
 }
+
+impl GetThrottle for BraiinsV2503 {}
+impl SetThrottle for BraiinsV2503 {}

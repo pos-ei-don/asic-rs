@@ -1874,3 +1874,6 @@ mod tests {
         Ok(())
     }
 }
+
+impl GetThrottle for PowerPlayV1 {}
+impl SetThrottle for PowerPlayV1 {}

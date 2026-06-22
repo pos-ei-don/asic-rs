@@ -672,3 +672,6 @@ mod tests {
         )
     }
 }
+
+impl GetThrottle for Bitaxe200 {}
+impl SetThrottle for Bitaxe200 {}
