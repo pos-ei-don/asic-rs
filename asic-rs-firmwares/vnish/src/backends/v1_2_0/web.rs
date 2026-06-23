@@ -114,15 +114,22 @@ impl VnishWebAPI {
         self.client.get_or_try_init(Self::build_client)
     }
 
-    /// Ensure authentication token is present, authenticate if needed
+    /// Ensure authentication token is present, authenticate if needed.
+    ///
+    /// Prefers a pre-issued token from the credentials (no username on VNish);
+    /// otherwise unlocks with the password to obtain one.
     async fn ensure_authenticated(&self) -> anyhow::Result<(), VnishError> {
         if self.bearer_token.read().await.is_some() {
             return Ok(());
         }
 
-        let token = self
-            .authenticate(self.auth.password.expose_secret())
-            .await?;
+        let token = match &self.auth.token {
+            Some(token) => token.expose_secret().to_string(),
+            None => {
+                self.authenticate(self.auth.password.expose_secret())
+                    .await?
+            }
+        };
         *self.bearer_token.write().await = Some(token);
         Ok(())
     }

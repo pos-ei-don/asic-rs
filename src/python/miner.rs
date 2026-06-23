@@ -237,13 +237,27 @@ impl Miner {
     }
     /// Set credentials used by subsequent operations on this miner.
     ///
+    /// Pass an optional `token` for firmwares that accept a pre-issued bearer
+    /// token (e.g. VNish); when set, backends that support it use the token
+    /// instead of logging in with the password.
+    ///
     /// Call this before starting concurrent operations. It raises `RuntimeError`
     /// if the miner handle is already shared by an active async operation.
-    pub fn set_auth(&mut self, username: String, password: String) -> PyResult<()> {
+    #[pyo3(signature = (username, password, token=None))]
+    pub fn set_auth(
+        &mut self,
+        username: String,
+        password: String,
+        token: Option<String>,
+    ) -> PyResult<()> {
+        let mut auth = MinerAuth::new(username, password);
+        if let Some(token) = token {
+            auth = auth.with_token(token);
+        }
         Arc::get_mut(&mut self.inner)
             .ok_or_else(|| PyRuntimeError::new_err("cannot set auth while miner is in use"))?
             .get_mut()
-            .set_auth(MinerAuth::new(username, password));
+            .set_auth(auth);
         Ok(())
     }
 
