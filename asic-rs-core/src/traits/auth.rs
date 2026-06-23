@@ -1,10 +1,16 @@
 pub use secrecy::{ExposeSecret, SecretString};
 
 /// Credentials for authenticating with a miner.
+///
+/// Most firmwares authenticate with a username/password. Some (e.g. VNish) have
+/// no username and authenticate by password only, but also accept a pre-issued
+/// bearer `token`. When a `token` is set, backends that support it use it
+/// directly and skip the password login.
 #[derive(Clone, Debug)]
 pub struct MinerAuth {
     pub username: String,
     pub password: SecretString,
+    pub token: Option<SecretString>,
 }
 
 impl MinerAuth {
@@ -12,7 +18,15 @@ impl MinerAuth {
         Self {
             username: username.into(),
             password: SecretString::from(password.into()),
+            token: None,
         }
+    }
+
+    /// Attach a pre-issued auth token (e.g. a bearer token). Backends that
+    /// support token auth use it instead of logging in with the password.
+    pub fn with_token(mut self, token: impl Into<String>) -> Self {
+        self.token = Some(SecretString::from(token.into()));
+        self
     }
 }
 
