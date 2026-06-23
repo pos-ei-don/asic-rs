@@ -3,8 +3,9 @@ use std::{collections::HashMap, net::IpAddr, str::FromStr, time::Duration};
 use anyhow;
 use asic_rs_core::{
     config::{
-        collector::{ConfigCollector, ConfigField, ConfigLocation},
+        collector::{ConfigCollector, ConfigExtractor, ConfigField, ConfigLocation},
         pools::PoolGroupConfig,
+        timezone::TimezoneConfig,
     },
     data::{
         board::{BoardData, MinerControlBoard},
@@ -76,7 +77,20 @@ impl APIClient for BraiinsV2604 {
 impl GetConfigsLocations for BraiinsV2604 {
     #[allow(unused_variables)]
     fn get_configs_locations(&self, data_field: ConfigField) -> Vec<ConfigLocation> {
-        vec![]
+        const GQL_TIMEZONE: MinerCommand = MinerCommand::GraphQL {
+            command: "{ bos { timezone { id } timezoneList { id } } }",
+        };
+        match data_field {
+            ConfigField::Timezone => vec![(
+                GQL_TIMEZONE,
+                ConfigExtractor {
+                    func: get_by_pointer,
+                    key: Some("/bos"),
+                    tag: None,
+                },
+            )],
+            _ => vec![],
+        }
     }
 }
 
@@ -665,39 +679,42 @@ impl GetMaxPowerTarget for BraiinsV2604 {
 }
 
 #[async_trait]
-impl SetTimezone for BraiinsV2604 {
-    fn supports_set_timezone(&self) -> bool {
+impl SupportsTimezoneConfig for BraiinsV2604 {
+    fn supports_timezone_config(&self) -> bool {
         true
     }
 
-    async fn get_timezone(&self) -> anyhow::Result<Option<String>> {
-        const Q: MinerCommand = MinerCommand::GraphQL {
-            command: "{ bos { timezone { id } } }",
-        };
-        let data = self.graphql.get_api_result(&Q).await?;
-        Ok(data
-            .pointer("/bos/timezone/id")
+    fn parse_timezone_config(
+        &self,
+        data: &HashMap<ConfigField, Value>,
+    ) -> anyhow::Result<TimezoneConfig> {
+        let obj = data
+            .get(&ConfigField::Timezone)
+            .ok_or_else(|| anyhow::anyhow!("No timezone data returned"))?;
+        let timezone = obj
+            .pointer("/timezone/id")
             .and_then(|v| v.as_str())
-            .map(String::from))
-    }
-
-    async fn list_timezones(&self) -> anyhow::Result<Vec<String>> {
-        const Q: MinerCommand = MinerCommand::GraphQL {
-            command: "{ bos { timezoneList { id } } }",
-        };
-        let data = self.graphql.get_api_result(&Q).await?;
-        Ok(data
-            .pointer("/bos/timezoneList")
+            .map(String::from);
+        let available = obj
+            .pointer("/timezoneList")
             .and_then(|v| v.as_array())
             .map(|arr| {
                 arr.iter()
                     .filter_map(|t| t.get("id").and_then(|v| v.as_str()).map(String::from))
                     .collect()
             })
-            .unwrap_or_default())
+            .unwrap_or_default();
+        Ok(TimezoneConfig {
+            timezone,
+            available,
+        })
     }
 
-    async fn set_timezone(&self, timezone: String) -> anyhow::Result<bool> {
+    async fn set_timezone_config(&self, config: TimezoneConfig) -> anyhow::Result<bool> {
+        let timezone = match config.timezone {
+            Some(tz) => tz,
+            None => anyhow::bail!("Timezone config has no timezone to set"),
+        };
         let mutation = r#"mutation ($tz: String!) {
             bos { setTimezone(timezone: $tz) { __typename } }
         }"#;

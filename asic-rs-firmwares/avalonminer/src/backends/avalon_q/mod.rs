@@ -443,7 +443,7 @@ impl GetMAC for AvalonQMiner {
 }
 
 impl GetSerialNumber for AvalonQMiner {}
-impl SetTimezone for AvalonQMiner {}
+impl SupportsTimezoneConfig for AvalonQMiner {}
 
 impl GetHostname for AvalonQMiner {}
 

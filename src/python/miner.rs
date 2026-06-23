@@ -5,7 +5,7 @@ use asic_rs_core::data::collector::DataField;
 use asic_rs_core::{
     config::{
         fan::FanConfig, pools::PoolGroupConfig as PoolGroup, preset::PresetInfo,
-        scaling::ScalingConfig, tuning::TuningConfig,
+        scaling::ScalingConfig, timezone::TimezoneConfig, tuning::TuningConfig,
     },
     data::{
         board::BoardData,
@@ -225,10 +225,10 @@ impl Miner {
     fn supports_check_firmware_update(&self, py: Python<'_>) -> bool {
         self.with_miner(py, |miner| miner.supports_check_firmware_update())
     }
-    /// Whether this miner supports setting its timezone.
+    /// Whether this miner supports reading and writing timezone configuration.
     #[getter]
-    fn supports_set_timezone(&self, py: Python<'_>) -> bool {
-        self.with_miner(py, |miner| miner.supports_set_timezone())
+    fn supports_timezone_config(&self, py: Python<'_>) -> bool {
+        self.with_miner(py, |miner| miner.supports_timezone_config())
     }
     /// Whether this miner supports scaling configuration.
     #[getter]
@@ -705,33 +705,28 @@ impl Miner {
             Ok(inner.set_preset(name).await.ok())
         })
     }
-    /// The miner's currently configured timezone, if known.
-    pub fn get_timezone<'a>(&self, py: Python<'a>) -> PyResult<PyAwaitable<Option<String>>> {
-        let inner = Arc::clone(&self.inner);
-        future_into_py(py, async move {
-            let inner = inner.read().await;
-            Ok(inner.get_timezone().await.ok().flatten())
-        })
-    }
-    /// The timezones the miner accepts (named zones where available; may be empty).
-    pub fn list_timezones<'a>(&self, py: Python<'a>) -> PyResult<PyAwaitable<Vec<String>>> {
-        let inner = Arc::clone(&self.inner);
-        future_into_py(py, async move {
-            let inner = inner.read().await;
-            Ok(inner.list_timezones().await.unwrap_or_default())
-        })
-    }
-    /// Set the miner's timezone (firmware-specific form: a named zone on
-    /// BraiinsOS, a fixed UTC offset like "GMT+1" on VNish).
-    pub fn set_timezone<'a>(
+    /// Await timezone configuration, or `None` when unsupported/unavailable.
+    pub fn get_timezone_config<'a>(
         &self,
         py: Python<'a>,
-        timezone: String,
+    ) -> PyResult<PyAwaitable<Option<TimezoneConfig>>> {
+        let inner = Arc::clone(&self.inner);
+        future_into_py(py, async move {
+            let inner = inner.read().await;
+            Ok(inner.get_timezone_config().await.ok())
+        })
+    }
+    /// Set timezone configuration.
+    #[pyo3(signature = (config: "TimezoneConfig"))]
+    pub fn set_timezone_config<'a>(
+        &self,
+        py: Python<'a>,
+        config: TimezoneConfig,
     ) -> PyResult<PyAwaitable<Option<bool>>> {
         let inner = Arc::clone(&self.inner);
         future_into_py(py, async move {
             let inner = inner.read().await;
-            Ok(inner.set_timezone(timezone).await.ok())
+            Ok(inner.set_timezone_config(config).await.ok())
         })
     }
     /// Replace the configured mining pool groups.

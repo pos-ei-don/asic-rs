@@ -33,6 +33,7 @@ mod asic_rs {
         pools::{PoolConfig as Pool, PoolGroupConfig as PoolGroup},
         preset::PresetInfo,
         scaling::ScalingConfig,
+        timezone::TimezoneConfig,
         tuning::TuningConfig,
     };
     #[pymodule_export]

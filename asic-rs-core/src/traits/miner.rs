@@ -16,6 +16,7 @@ use crate::{
         pools::PoolGroupConfig,
         preset::PresetInfo,
         scaling::ScalingConfig,
+        timezone::TimezoneConfig,
         tuning::TuningConfig,
     },
     data::{
@@ -47,7 +48,6 @@ pub trait Miner:
     + SupportsConfigs
     + SupportsPresets
     + UpgradeFirmware
-    + SetTimezone
     + HasAuth
     + HasDefaultAuth
 {
@@ -59,7 +59,6 @@ impl<
         + SupportsConfigs
         + SupportsPresets
         + UpgradeFirmware
-        + SetTimezone
         + HasAuth
         + HasDefaultAuth,
 > Miner for T
@@ -99,6 +98,7 @@ pub trait SupportsConfigs:
     + SupportsScalingConfig
     + SupportsTuningConfig
     + SupportsFanConfig
+    + SupportsTimezoneConfig
 {
 }
 
@@ -107,7 +107,8 @@ impl<
         + SupportsPoolsConfig
         + SupportsScalingConfig
         + SupportsTuningConfig
-        + SupportsFanConfig,
+        + SupportsFanConfig
+        + SupportsTimezoneConfig,
 > SupportsConfigs for T
 {
 }
@@ -895,28 +896,6 @@ pub trait SupportsPresets {
 }
 
 #[async_trait]
-pub trait SetTimezone {
-    /// Set the miner's timezone. The accepted form is firmware-specific:
-    /// BraiinsOS takes a named zone id (e.g. `"Europe/Vienna"` — it then handles
-    /// DST itself); VNish takes a fixed UTC offset (e.g. `"GMT+1"`).
-    #[allow(unused_variables)]
-    async fn set_timezone(&self, timezone: String) -> anyhow::Result<bool> {
-        anyhow::bail!("Setting timezone is not supported on this platform");
-    }
-    /// The miner's currently configured timezone, if known.
-    async fn get_timezone(&self) -> anyhow::Result<Option<String>> {
-        Ok(None)
-    }
-    /// The timezones the miner accepts (named zones where available; may be empty).
-    async fn list_timezones(&self) -> anyhow::Result<Vec<String>> {
-        Ok(Vec::new())
-    }
-    fn supports_set_timezone(&self) -> bool {
-        false
-    }
-}
-
-#[async_trait]
 pub trait Restart {
     async fn restart(&self) -> anyhow::Result<bool> {
         anyhow::bail!("Restarting is not supported on this platform");
@@ -1039,6 +1018,31 @@ pub trait SupportsScalingConfig: CollectConfigs {
     }
 
     fn supports_scaling_config(&self) -> bool;
+}
+
+#[async_trait]
+pub trait SupportsTimezoneConfig: CollectConfigs {
+    #[allow(unused_variables)]
+    async fn set_timezone_config(&self, config: TimezoneConfig) -> anyhow::Result<bool> {
+        anyhow::bail!("Setting timezone config is not supported on this platform");
+    }
+    #[tracing::instrument(level = "debug")]
+    async fn get_timezone_config(&self) -> anyhow::Result<TimezoneConfig> {
+        let mut collector = self.get_config_collector();
+        let data = collector.collect(&[ConfigField::Timezone]).await;
+        self.parse_timezone_config(&data)
+    }
+    #[allow(unused_variables)]
+    fn parse_timezone_config(
+        &self,
+        data: &HashMap<ConfigField, Value>,
+    ) -> anyhow::Result<TimezoneConfig> {
+        anyhow::bail!("Getting timezone config is not supported on this platform");
+    }
+
+    fn supports_timezone_config(&self) -> bool {
+        false
+    }
 }
 
 #[async_trait]

@@ -987,7 +987,7 @@ impl GetScaledTuningTarget for LuxMinerV1 {}
 impl GetDefaultPowerTarget for LuxMinerV1 {}
 impl GetMinPowerTarget for LuxMinerV1 {}
 impl GetMaxPowerTarget for LuxMinerV1 {}
-impl SetTimezone for LuxMinerV1 {}
+impl SupportsTimezoneConfig for LuxMinerV1 {}
 
 impl GetPsuFans for LuxMinerV1 {}
 

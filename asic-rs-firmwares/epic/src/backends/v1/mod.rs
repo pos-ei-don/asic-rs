@@ -169,6 +169,7 @@ impl GetConfigsLocations for PowerPlayV1 {
                     tag: None,
                 },
             )],
+            ConfigField::Timezone => vec![],
         }
     }
 }
@@ -838,7 +839,7 @@ impl GetPsuFans for PowerPlayV1 {}
 impl GetDefaultPowerTarget for PowerPlayV1 {}
 impl GetMinPowerTarget for PowerPlayV1 {}
 impl GetMaxPowerTarget for PowerPlayV1 {}
-impl SetTimezone for PowerPlayV1 {}
+impl SupportsTimezoneConfig for PowerPlayV1 {}
 
 impl GetFluidTemperature for PowerPlayV1 {}
 
