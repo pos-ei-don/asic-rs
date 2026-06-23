@@ -4,7 +4,12 @@ use serde::{Deserialize, Serialize};
 
 #[cfg_attr(
     feature = "python",
-    pyclass(name = "TemperatureConfig", skip_from_py_object, get_all, module = "asic_rs")
+    pyclass(
+        name = "TemperatureConfig",
+        skip_from_py_object,
+        get_all,
+        module = "asic_rs"
+    )
 )]
 #[cfg_attr(
     feature = "python",
