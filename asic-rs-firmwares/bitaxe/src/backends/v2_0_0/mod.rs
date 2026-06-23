@@ -567,6 +567,7 @@ impl UpgradeFirmware for Bitaxe200 {
 }
 
 impl HasAuth for Bitaxe200 {}
+impl SetTimezone for Bitaxe200 {}
 impl HasDefaultAuth for Bitaxe200 {}
 
 #[async_trait]

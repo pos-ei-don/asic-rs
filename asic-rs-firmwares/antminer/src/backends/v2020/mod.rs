@@ -892,6 +892,7 @@ impl GetPsuFans for AntMinerV2020 {}
 impl GetDefaultPowerTarget for AntMinerV2020 {}
 impl GetMinPowerTarget for AntMinerV2020 {}
 impl GetMaxPowerTarget for AntMinerV2020 {}
+impl SetTimezone for AntMinerV2020 {}
 
 impl GetMessages for AntMinerV2020 {
     fn parse_messages(&self, data: &HashMap<DataField, Value>) -> Vec<MinerMessage> {

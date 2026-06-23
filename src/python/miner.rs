@@ -225,6 +225,11 @@ impl Miner {
     fn supports_check_firmware_update(&self, py: Python<'_>) -> bool {
         self.with_miner(py, |miner| miner.supports_check_firmware_update())
     }
+    /// Whether this miner supports setting its timezone.
+    #[getter]
+    fn supports_set_timezone(&self, py: Python<'_>) -> bool {
+        self.with_miner(py, |miner| miner.supports_set_timezone())
+    }
     /// Whether this miner supports scaling configuration.
     #[getter]
     fn supports_scaling_config(&self, py: Python<'_>) -> bool {
@@ -698,6 +703,38 @@ impl Miner {
         future_into_py(py, async move {
             let inner = inner.read().await;
             Ok(inner.set_preset(name).await.ok())
+        })
+    }
+    /// The miner's currently configured timezone, if known.
+    pub fn get_timezone<'a>(
+        &self,
+        py: Python<'a>,
+    ) -> PyResult<PyAwaitable<Option<String>>> {
+        let inner = Arc::clone(&self.inner);
+        future_into_py(py, async move {
+            let inner = inner.read().await;
+            Ok(inner.get_timezone().await.ok().flatten())
+        })
+    }
+    /// The timezones the miner accepts (named zones where available; may be empty).
+    pub fn list_timezones<'a>(&self, py: Python<'a>) -> PyResult<PyAwaitable<Vec<String>>> {
+        let inner = Arc::clone(&self.inner);
+        future_into_py(py, async move {
+            let inner = inner.read().await;
+            Ok(inner.list_timezones().await.unwrap_or_default())
+        })
+    }
+    /// Set the miner's timezone (firmware-specific form: a named zone on
+    /// BraiinsOS, a fixed UTC offset like "GMT+1" on VNish).
+    pub fn set_timezone<'a>(
+        &self,
+        py: Python<'a>,
+        timezone: String,
+    ) -> PyResult<PyAwaitable<Option<bool>>> {
+        let inner = Arc::clone(&self.inner);
+        future_into_py(py, async move {
+            let inner = inner.read().await;
+            Ok(inner.set_timezone(timezone).await.ok())
         })
     }
     /// Replace the configured mining pool groups.

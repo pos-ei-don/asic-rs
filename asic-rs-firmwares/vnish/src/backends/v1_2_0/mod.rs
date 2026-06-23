@@ -576,6 +576,33 @@ impl GetFans for VnishV120 {
 }
 
 impl GetPsuFans for VnishV120 {}
+#[async_trait]
+impl SetTimezone for VnishV120 {
+    fn supports_set_timezone(&self) -> bool {
+        true
+    }
+
+    /// VNish stores a fixed UTC offset (e.g. `"GMT+2"`) — it does not track DST.
+    async fn get_timezone(&self) -> anyhow::Result<Option<String>> {
+        let settings = self.web.settings().await?;
+        Ok(settings
+            .pointer("/regional/timezone/current")
+            .and_then(|v| v.as_str())
+            .map(String::from))
+    }
+
+    /// Set the fixed UTC offset (read-modify-write the settings object).
+    async fn set_timezone(&self, timezone: String) -> anyhow::Result<bool> {
+        let mut settings = self.web.settings().await?;
+        match settings.pointer_mut("/regional/timezone") {
+            Some(tz) => {
+                tz["current"] = json!(timezone);
+            }
+            None => anyhow::bail!("VNish settings has no /regional/timezone"),
+        }
+        self.web.set_settings(settings).await.map(|_| true)
+    }
+}
 
 impl GetFluidTemperature for VnishV120 {
     fn parse_fluid_temperature(&self, data: &HashMap<DataField, Value>) -> Option<Temperature> {

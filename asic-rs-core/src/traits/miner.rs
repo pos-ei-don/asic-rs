@@ -47,6 +47,7 @@ pub trait Miner:
     + SupportsConfigs
     + SupportsPresets
     + UpgradeFirmware
+    + SetTimezone
     + HasAuth
     + HasDefaultAuth
 {
@@ -58,6 +59,7 @@ impl<
         + SupportsConfigs
         + SupportsPresets
         + UpgradeFirmware
+        + SetTimezone
         + HasAuth
         + HasDefaultAuth,
 > Miner for T
@@ -888,6 +890,28 @@ pub trait SupportsPresets {
     }
     /// Defaults to `false`; backends with named presets override this.
     fn supports_presets(&self) -> bool {
+        false
+    }
+}
+
+#[async_trait]
+pub trait SetTimezone {
+    /// Set the miner's timezone. The accepted form is firmware-specific:
+    /// BraiinsOS takes a named zone id (e.g. `"Europe/Vienna"` — it then handles
+    /// DST itself); VNish takes a fixed UTC offset (e.g. `"GMT+1"`).
+    #[allow(unused_variables)]
+    async fn set_timezone(&self, timezone: String) -> anyhow::Result<bool> {
+        anyhow::bail!("Setting timezone is not supported on this platform");
+    }
+    /// The miner's currently configured timezone, if known.
+    async fn get_timezone(&self) -> anyhow::Result<Option<String>> {
+        Ok(None)
+    }
+    /// The timezones the miner accepts (named zones where available; may be empty).
+    async fn list_timezones(&self) -> anyhow::Result<Vec<String>> {
+        Ok(Vec::new())
+    }
+    fn supports_set_timezone(&self) -> bool {
         false
     }
 }

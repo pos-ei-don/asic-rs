@@ -664,6 +664,56 @@ impl GetMaxPowerTarget for BraiinsV2604 {
     }
 }
 
+#[async_trait]
+impl SetTimezone for BraiinsV2604 {
+    fn supports_set_timezone(&self) -> bool {
+        true
+    }
+
+    async fn get_timezone(&self) -> anyhow::Result<Option<String>> {
+        const Q: MinerCommand = MinerCommand::GraphQL {
+            command: "{ bos { timezone { id } } }",
+        };
+        let data = self.graphql.get_api_result(&Q).await?;
+        Ok(data
+            .pointer("/bos/timezone/id")
+            .and_then(|v| v.as_str())
+            .map(String::from))
+    }
+
+    async fn list_timezones(&self) -> anyhow::Result<Vec<String>> {
+        const Q: MinerCommand = MinerCommand::GraphQL {
+            command: "{ bos { timezoneList { id } } }",
+        };
+        let data = self.graphql.get_api_result(&Q).await?;
+        Ok(data
+            .pointer("/bos/timezoneList")
+            .and_then(|v| v.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|t| t.get("id").and_then(|v| v.as_str()).map(String::from))
+                    .collect()
+            })
+            .unwrap_or_default())
+    }
+
+    async fn set_timezone(&self, timezone: String) -> anyhow::Result<bool> {
+        let mutation = r#"mutation ($tz: String!) {
+            bos { setTimezone(timezone: $tz) { __typename } }
+        }"#;
+        let variables = json!({ "tz": timezone });
+        let result = self
+            .graphql
+            .send_graphql_command(mutation, true, Some(variables))
+            .await?;
+        // BosResult is a union; a `BosError` variant signals failure.
+        let typename = result
+            .pointer("/bos/setTimezone/__typename")
+            .and_then(|v| v.as_str());
+        Ok(matches!(typename, Some(t) if t != "BosError"))
+    }
+}
+
 impl GetPsuFans for BraiinsV2604 {}
 
 impl GetMessages for BraiinsV2604 {

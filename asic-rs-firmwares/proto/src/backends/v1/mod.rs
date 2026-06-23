@@ -607,6 +607,7 @@ impl GetFans for ProtoV1 {
 }
 
 impl GetPsuFans for ProtoV1 {}
+impl SetTimezone for ProtoV1 {}
 impl GetFluidTemperature for ProtoV1 {}
 
 impl GetWattage for ProtoV1 {
