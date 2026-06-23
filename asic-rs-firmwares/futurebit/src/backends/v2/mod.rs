@@ -600,9 +600,7 @@ impl GetWattage for ApolloV2 {
 impl GetTuningTarget for ApolloV2 {}
 
 impl GetScaledTuningTarget for ApolloV2 {}
-impl GetDefaultPowerTarget for ApolloV2 {}
-impl GetMinPowerTarget for ApolloV2 {}
-impl GetMaxPowerTarget for ApolloV2 {}
+impl GetTuningCapabilities for ApolloV2 {}
 impl GetLightFlashing for ApolloV2 {}
 
 impl GetMessages for ApolloV2 {}

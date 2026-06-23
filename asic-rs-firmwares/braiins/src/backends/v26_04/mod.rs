@@ -8,6 +8,7 @@ use asic_rs_core::{
     },
     data::{
         board::{BoardData, MinerControlBoard},
+        capabilities::{PowerTuningCapabilities, TuningCapabilities},
         collector::{
             DataCollector, DataExtensions, DataExtractor, DataField, DataLocation, get_by_pointer,
         },
@@ -328,27 +329,11 @@ impl GetDataLocations for BraiinsV2604 {
                     tag: None,
                 },
             )],
-            DataField::DefaultPowerTarget => vec![(
+            DataField::TuningCapabilities => vec![(
                 GQL_POWER_TARGET_META_QUERY,
                 DataExtractor {
                     func: get_by_pointer,
-                    key: Some("/bosminer/metadata/autotuning/powerTarget/default"),
-                    tag: None,
-                },
-            )],
-            DataField::MinPowerTarget => vec![(
-                GQL_POWER_TARGET_META_QUERY,
-                DataExtractor {
-                    func: get_by_pointer,
-                    key: Some("/bosminer/metadata/autotuning/powerTarget/min"),
-                    tag: None,
-                },
-            )],
-            DataField::MaxPowerTarget => vec![(
-                GQL_POWER_TARGET_META_QUERY,
-                DataExtractor {
-                    func: get_by_pointer,
-                    key: Some("/bosminer/metadata/autotuning/powerTarget/max"),
+                    key: Some("/bosminer/metadata/autotuning/powerTarget"),
                     tag: None,
                 },
             )],
@@ -645,21 +630,32 @@ impl GetScaledTuningTarget for BraiinsV2604 {
 }
 
 impl GetFluidTemperature for BraiinsV2604 {}
-impl GetDefaultPowerTarget for BraiinsV2604 {
-    fn parse_default_power_target(&self, data: &HashMap<DataField, Value>) -> Option<Power> {
-        data.extract_map::<i64, _>(DataField::DefaultPowerTarget, |w| {
-            Power::from_watts(w as f64)
+impl GetTuningCapabilities for BraiinsV2604 {
+    fn parse_tuning_capabilities(
+        &self,
+        data: &HashMap<DataField, Value>,
+    ) -> Option<TuningCapabilities> {
+        // The extractor stores the `powerTarget` object ({default, min, max}) in
+        // watts under the field; read the three watt values from it.
+        let power_target = data.get(&DataField::TuningCapabilities)?;
+        let watts = |key: &str| {
+            power_target
+                .get(key)
+                .and_then(|v| v.as_i64())
+                .map(|w| TuningTarget::from_watts(w as f64))
+        };
+        let power = PowerTuningCapabilities {
+            default: watts("default"),
+            minimum: watts("min"),
+            maximum: watts("max"),
+        };
+        if power == PowerTuningCapabilities::default() {
+            return None;
+        }
+        Some(TuningCapabilities {
+            power: Some(power),
+            ..Default::default()
         })
-    }
-}
-impl GetMinPowerTarget for BraiinsV2604 {
-    fn parse_min_power_target(&self, data: &HashMap<DataField, Value>) -> Option<Power> {
-        data.extract_map::<i64, _>(DataField::MinPowerTarget, |w| Power::from_watts(w as f64))
-    }
-}
-impl GetMaxPowerTarget for BraiinsV2604 {
-    fn parse_max_power_target(&self, data: &HashMap<DataField, Value>) -> Option<Power> {
-        data.extract_map::<i64, _>(DataField::MaxPowerTarget, |w| Power::from_watts(w as f64))
     }
 }
 

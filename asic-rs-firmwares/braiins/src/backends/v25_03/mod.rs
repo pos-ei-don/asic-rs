@@ -389,9 +389,7 @@ impl GetFirmwareVersion for BraiinsV2503 {
 }
 
 impl GetControlBoardVersion for BraiinsV2503 {}
-impl GetDefaultPowerTarget for BraiinsV2503 {}
-impl GetMinPowerTarget for BraiinsV2503 {}
-impl GetMaxPowerTarget for BraiinsV2503 {}
+impl GetTuningCapabilities for BraiinsV2503 {}
 
 impl GetHashboards for BraiinsV2503 {
     fn parse_hashboards(&self, data: &HashMap<DataField, Value>) -> Vec<BoardData> {

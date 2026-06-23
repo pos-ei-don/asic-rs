@@ -37,6 +37,10 @@ mod asic_rs {
     #[pymodule_export]
     use asic_rs_core::data::{
         board::{BoardData, ChipData, MinerControlBoard},
+        capabilities::{
+            HashRateTuningCapabilities, PowerTuningCapabilities, PresetTuningCapabilities,
+            TuningCapabilities,
+        },
         device::{DeviceInfo, MinerHardware},
         fan::FanData,
         message::{MessageSeverity, MinerComponent, MinerMessage},

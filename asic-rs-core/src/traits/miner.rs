@@ -19,6 +19,7 @@ use crate::{
     },
     data::{
         board::{BoardData, MinerControlBoard},
+        capabilities::TuningCapabilities,
         collector::{DataCollector, DataField, DataLocation},
         command::MinerCommand,
         device::DeviceInfo,
@@ -130,9 +131,7 @@ pub trait GetMinerData:
     + GetWattage
     + GetTuningTarget
     + GetScaledTuningTarget
-    + GetDefaultPowerTarget
-    + GetMinPowerTarget
-    + GetMaxPowerTarget
+    + GetTuningCapabilities
     + GetLightFlashing
     + GetMessages
     + GetUptime
@@ -191,9 +190,7 @@ impl<
         + GetWattage
         + GetTuningTarget
         + GetScaledTuningTarget
-        + GetDefaultPowerTarget
-        + GetMinPowerTarget
-        + GetMaxPowerTarget
+        + GetTuningCapabilities
         + GetLightFlashing
         + GetMessages
         + GetUptime
@@ -230,9 +227,7 @@ impl<
         let wattage = self.parse_wattage(&data);
         let tuning_target = self.parse_tuning_target(&data);
         let scaled_tuning_target = self.parse_scaled_tuning_target(&data);
-        let default_power_target = self.parse_default_power_target(&data);
-        let min_power_target = self.parse_min_power_target(&data);
-        let max_power_target = self.parse_max_power_target(&data);
+        let tuning_capabilities = self.parse_tuning_capabilities(&data);
         let fluid_temperature = self.parse_fluid_temperature(&data);
         let outlet_fluid_temperature = self.parse_outlet_fluid_temperature(&data);
         let fans = self.parse_fans(&data);
@@ -323,9 +318,7 @@ impl<
             wattage,
             tuning_target,
             scaled_tuning_target,
-            default_power_target,
-            min_power_target,
-            max_power_target,
+            tuning_capabilities,
             efficiency,
 
             // Status information
@@ -663,50 +656,21 @@ pub trait GetScaledTuningTarget: CollectData {
     }
 }
 
-// Default Power Target
+// Tuning Capabilities
 #[async_trait]
-pub trait GetDefaultPowerTarget: CollectData {
+pub trait GetTuningCapabilities: CollectData {
     #[tracing::instrument(level = "debug")]
-    async fn get_default_power_target(&self) -> Option<Power> {
+    async fn get_tuning_capabilities(&self) -> Option<TuningCapabilities> {
         let mut collector = self.get_collector();
-        let data = collector.collect(&[DataField::DefaultPowerTarget]).await;
-        self.parse_default_power_target(&data)
+        let data = collector.collect(&[DataField::TuningCapabilities]).await;
+        self.parse_tuning_capabilities(&data)
     }
 
     #[allow(unused_variables)]
-    fn parse_default_power_target(&self, data: &HashMap<DataField, Value>) -> Option<Power> {
-        None
-    }
-}
-
-// Min Power Target
-#[async_trait]
-pub trait GetMinPowerTarget: CollectData {
-    #[tracing::instrument(level = "debug")]
-    async fn get_min_power_target(&self) -> Option<Power> {
-        let mut collector = self.get_collector();
-        let data = collector.collect(&[DataField::MinPowerTarget]).await;
-        self.parse_min_power_target(&data)
-    }
-
-    #[allow(unused_variables)]
-    fn parse_min_power_target(&self, data: &HashMap<DataField, Value>) -> Option<Power> {
-        None
-    }
-}
-
-// Max Power Target
-#[async_trait]
-pub trait GetMaxPowerTarget: CollectData {
-    #[tracing::instrument(level = "debug")]
-    async fn get_max_power_target(&self) -> Option<Power> {
-        let mut collector = self.get_collector();
-        let data = collector.collect(&[DataField::MaxPowerTarget]).await;
-        self.parse_max_power_target(&data)
-    }
-
-    #[allow(unused_variables)]
-    fn parse_max_power_target(&self, data: &HashMap<DataField, Value>) -> Option<Power> {
+    fn parse_tuning_capabilities(
+        &self,
+        data: &HashMap<DataField, Value>,
+    ) -> Option<TuningCapabilities> {
         None
     }
 }
