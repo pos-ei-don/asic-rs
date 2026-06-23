@@ -706,10 +706,7 @@ impl Miner {
         })
     }
     /// The miner's currently configured timezone, if known.
-    pub fn get_timezone<'a>(
-        &self,
-        py: Python<'a>,
-    ) -> PyResult<PyAwaitable<Option<String>>> {
+    pub fn get_timezone<'a>(&self, py: Python<'a>) -> PyResult<PyAwaitable<Option<String>>> {
         let inner = Arc::clone(&self.inner);
         future_into_py(py, async move {
             let inner = inner.read().await;
