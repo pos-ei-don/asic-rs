@@ -8,7 +8,7 @@ use asic_rs_core::{
     },
     data::{
         board::{BoardData, MinerControlBoard},
-        capabilities::{PowerTuningCapabilities, TuningCapabilities},
+        capabilities::TuningCapabilities,
         collector::{
             DataCollector, DataExtensions, DataExtractor, DataField, DataLocation, get_by_pointer,
         },
@@ -34,7 +34,10 @@ use web::BraiinsWebAPI;
 
 use crate::{
     backends::{
-        util::{parse_configured_tuning_target, parse_scaled_tuning_target},
+        util::{
+            parse_configured_tuning_target, parse_scaled_tuning_target,
+            tuner_constraints_capabilities,
+        },
         v21_09::graphql::BraiinsGraphQLAPI,
     },
     firmware::BraiinsFirmware,
@@ -140,20 +143,9 @@ impl GetDataLocations for BraiinsV2604 {
                 }
             }"#,
         };
-        const GQL_POWER_TARGET_META_QUERY: MinerCommand = MinerCommand::GraphQL {
-            command: r#"{
-                bosminer {
-                    metadata {
-                        autotuning {
-                            powerTarget {
-                                default
-                                min
-                                max
-                            }
-                        }
-                    }
-                }
-            }"#,
+        const WEB_CONSTRAINTS: MinerCommand = MinerCommand::WebAPI {
+            command: "configuration/constraints",
+            parameters: None,
         };
 
         match data_field {
@@ -330,10 +322,10 @@ impl GetDataLocations for BraiinsV2604 {
                 },
             )],
             DataField::TuningCapabilities => vec![(
-                GQL_POWER_TARGET_META_QUERY,
+                WEB_CONSTRAINTS,
                 DataExtractor {
                     func: get_by_pointer,
-                    key: Some("/bosminer/metadata/autotuning/powerTarget"),
+                    key: Some("/tuner_constraints"),
                     tag: None,
                 },
             )],
@@ -635,27 +627,10 @@ impl GetTuningCapabilities for BraiinsV2604 {
         &self,
         data: &HashMap<DataField, Value>,
     ) -> Option<TuningCapabilities> {
-        // The extractor stores the `powerTarget` object ({default, min, max}) in
-        // watts under the field; read the three watt values from it.
-        let power_target = data.get(&DataField::TuningCapabilities)?;
-        let watts = |key: &str| {
-            power_target
-                .get(key)
-                .and_then(|v| v.as_i64())
-                .map(|w| TuningTarget::from_watts(w as f64))
-        };
-        let power = PowerTuningCapabilities {
-            default: watts("default"),
-            minimum: watts("min"),
-            maximum: watts("max"),
-        };
-        if power == PowerTuningCapabilities::default() {
-            return None;
-        }
-        Some(TuningCapabilities {
-            power: Some(power),
-            ..Default::default()
-        })
+        // BOS+ REST `/configuration/constraints` → `tuner_constraints`, with
+        // power_target (watts) and hashrate_target (TH/s) envelopes.
+        let tuner = data.get(&DataField::TuningCapabilities)?;
+        Some(tuner_constraints_capabilities(tuner))
     }
 }
 
