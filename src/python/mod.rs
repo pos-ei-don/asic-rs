@@ -40,6 +40,7 @@ mod asic_rs {
         board::{BoardData, ChipData, MinerControlBoard},
         device::{DeviceInfo, MinerHardware},
         fan::FanData,
+        firmware::FirmwareUpdate,
         message::{MessageSeverity, MinerComponent, MinerMessage},
         miner::{MinerData, PyTuningTarget as TuningTarget},
         pool::{PoolData, PoolGroupData, PoolScheme, PoolURL},
