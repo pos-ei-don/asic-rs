@@ -647,7 +647,9 @@ impl GetScaledTuningTarget for BraiinsV2604 {
 impl GetFluidTemperature for BraiinsV2604 {}
 impl GetDefaultPowerTarget for BraiinsV2604 {
     fn parse_default_power_target(&self, data: &HashMap<DataField, Value>) -> Option<Power> {
-        data.extract_map::<i64, _>(DataField::DefaultPowerTarget, |w| Power::from_watts(w as f64))
+        data.extract_map::<i64, _>(DataField::DefaultPowerTarget, |w| {
+            Power::from_watts(w as f64)
+        })
     }
 }
 impl GetMinPowerTarget for BraiinsV2604 {
