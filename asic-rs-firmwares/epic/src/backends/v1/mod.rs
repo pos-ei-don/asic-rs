@@ -169,7 +169,7 @@ impl GetConfigsLocations for PowerPlayV1 {
                     tag: None,
                 },
             )],
-            ConfigField::Temperature => vec![],
+            _ => vec![],
         }
     }
 }

@@ -970,8 +970,8 @@ impl SupportsTemperatureConfig for VnishV120 {
 
     /// VNish reports configured thermal limits in `/summary`: the minimum
     /// startup water temperature and the self-protection restart temperature.
-    /// `target`/`hot` are not exposed via `/summary` (left `None` = not reported,
-    /// not "no limit").
+    /// `hot` is not exposed via `/summary` (left `None` = not reported, not
+    /// "no limit").
     fn parse_temperature_config(
         &self,
         data: &HashMap<ConfigField, Value>,
@@ -980,7 +980,6 @@ impl SupportsTemperatureConfig for VnishV120 {
             .get(&ConfigField::Temperature)
             .ok_or_else(|| anyhow::anyhow!("No temperature config returned by miner"))?;
         Ok(TemperatureConfig {
-            target: None,
             hot: None,
             danger: miner.pointer("/misc/restart_temp").and_then(|v| v.as_f64()),
             minimum: miner
