@@ -67,10 +67,7 @@ impl MaraWebAPI {
         }
 
         let response = request_builder
-            .send_digest_auth((
-                self.auth.username(),
-                self.auth.password(),
-            ))
+            .send_digest_auth((self.auth.username(), self.auth.password()))
             .await
             .map_err(|e| anyhow::anyhow!("HTTP request failed: {}", e))?;
 

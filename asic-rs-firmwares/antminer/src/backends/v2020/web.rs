@@ -168,10 +168,7 @@ impl AntMinerWebAPI {
             Method::GET => client
                 .get(url)
                 .timeout(timeout)
-                .send_digest_auth((
-                    self.auth.username(),
-                    self.auth.password(),
-                ))
+                .send_digest_auth((self.auth.username(), self.auth.password()))
                 .await
                 .map_err(|e| anyhow!(e.to_string()))?,
             Method::POST => {
@@ -180,10 +177,7 @@ impl AntMinerWebAPI {
                     .post(url)
                     .json(&data)
                     .timeout(timeout)
-                    .send_digest_auth((
-                        self.auth.username(),
-                        self.auth.password(),
-                    ))
+                    .send_digest_auth((self.auth.username(), self.auth.password()))
                     .await
                     .map_err(|e| anyhow!(e.to_string()))?
             }
@@ -254,10 +248,7 @@ impl AntMinerWebAPI {
             .post(url)
             .multipart(form)
             .timeout(self.timeout.max(Duration::from_secs(60)))
-            .send_digest_auth((
-                self.auth.username(),
-                self.auth.password(),
-            ))
+            .send_digest_auth((self.auth.username(), self.auth.password()))
             .await
             .with_context(|| "firmware upload HTTP request failed".to_string())?;
 

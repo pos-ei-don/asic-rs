@@ -4,7 +4,7 @@ use anyhow::{Context, Result, anyhow, bail};
 use asic_rs_core::{
     data::command::MinerCommand,
     traits::{
-        auth::{MinerAuth},
+        auth::MinerAuth,
         miner::{APIClient, WebAPIClient},
     },
 };

@@ -120,9 +120,7 @@ impl BraiinsWebAPI {
             return Ok(());
         }
 
-        let token = self
-            .authenticate(self.auth.password())
-            .await?;
+        let token = self.authenticate(self.auth.password()).await?;
         *self.bearer_token.write().await = Some(token);
 
         Ok(())
