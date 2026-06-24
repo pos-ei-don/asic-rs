@@ -14,7 +14,7 @@ use asic_rs_core::{
         command::MinerCommand,
         device::{DeviceInfo, HashAlgorithm},
         fan::FanData,
-        firmware::FirmwareUpdate,
+        firmware::{FirmwareStats, FirmwareUpdate},
         hashrate::{HashRate, HashRateUnit},
         message::{MessageSeverity, MinerMessage},
         miner::TuningTarget,
@@ -34,7 +34,7 @@ use web::BraiinsWebAPI;
 
 use crate::{
     backends::{
-        util::{parse_configured_tuning_target, parse_scaled_tuning_target},
+        util::{parse_bos_version, parse_configured_tuning_target, parse_scaled_tuning_target},
         v21_09::graphql::BraiinsGraphQLAPI,
     },
     firmware::BraiinsFirmware,
@@ -839,7 +839,7 @@ impl UpgradeFirmware for BraiinsV2604 {
 
     /// Reads the installed version and asks BOS to check the vendor's release
     /// server (`bos.checkForUpgrade`) via the authenticated GraphQL client.
-    async fn check_firmware_update(&self) -> anyhow::Result<FirmwareUpdate> {
+    async fn check_firmware_update(&self) -> anyhow::Result<FirmwareStats> {
         const GQL_CHECK_UPGRADE: MinerCommand = MinerCommand::GraphQL {
             command: r#"{
                 bos {
@@ -849,7 +849,6 @@ impl UpgradeFirmware for BraiinsV2604 {
                         ... on UpgradeDetail {
                             latestRelease {
                                 version
-                                releaseDate
                                 url
                             }
                         }
@@ -862,19 +861,18 @@ impl UpgradeFirmware for BraiinsV2604 {
         let s = |p: &str| -> Option<String> {
             data.pointer(p).and_then(|v| v.as_str()).map(String::from)
         };
-        let current_version = s("/bos/info/version/full");
-        let latest_version = s("/bos/checkForUpgrade/latestRelease/version");
-        let release_date = s("/bos/checkForUpgrade/latestRelease/releaseDate");
-        let release_url = s("/bos/checkForUpgrade/latestRelease/url");
-        let update_available =
-            latest_version.is_some() && latest_version.as_deref() != current_version.as_deref();
+        let current_version = s("/bos/info/version/full")
+            .as_deref()
+            .and_then(parse_bos_version);
+        let latest_version = s("/bos/checkForUpgrade/latestRelease/version")
+            .as_deref()
+            .and_then(parse_bos_version);
+        let firmware = s("/bos/checkForUpgrade/latestRelease/url").map(FirmwareUpdate::Remote);
 
-        Ok(FirmwareUpdate {
+        Ok(FirmwareStats {
             current_version,
             latest_version,
-            update_available,
-            release_date,
-            release_url,
+            firmware,
         })
     }
 }
