@@ -12,7 +12,13 @@ pub(crate) fn parse_bos_version(full: &str) -> Option<semver::Version> {
     let normalized = version_str
         .split('.')
         .map(|part| part.trim_start_matches('0').to_string())
-        .map(|part| if part.is_empty() { "0".to_string() } else { part })
+        .map(|part| {
+            if part.is_empty() {
+                "0".to_string()
+            } else {
+                part
+            }
+        })
         .collect::<Vec<_>>()
         .join(".");
     let padded = match version_str.split('.').count() {
