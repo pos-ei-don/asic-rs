@@ -169,6 +169,7 @@ impl GetConfigsLocations for PowerPlayV1 {
                     tag: None,
                 },
             )],
+            _ => vec![],
         }
     }
 }
@@ -835,6 +836,7 @@ impl GetFans for PowerPlayV1 {
 }
 
 impl GetPsuFans for PowerPlayV1 {}
+impl GetTuningCapabilities for PowerPlayV1 {}
 
 impl GetFluidTemperature for PowerPlayV1 {}
 
@@ -1570,6 +1572,10 @@ impl HasAuth for PowerPlayV1 {
         self.web.set_auth(auth);
     }
 }
+
+impl SupportsTemperatureConfig for PowerPlayV1 {}
+impl GetTuningPercent for PowerPlayV1 {}
+impl SetTuningPercent for PowerPlayV1 {}
 
 #[cfg(test)]
 mod tests {

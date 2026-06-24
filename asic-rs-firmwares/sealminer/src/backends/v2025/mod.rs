@@ -553,7 +553,7 @@ impl GetTuningTarget for SealMinerV2025 {
 }
 
 impl GetScaledTuningTarget for SealMinerV2025 {}
-
+impl GetTuningCapabilities for SealMinerV2025 {}
 impl GetLightFlashing for SealMinerV2025 {
     fn parse_light_flashing(&self, data: &HashMap<DataField, Value>) -> Option<bool> {
         data.extract::<String>(DataField::LightFlashing)
@@ -840,6 +840,10 @@ impl HasDefaultAuth for SealMinerV2025 {
         MinerAuth::new("seal", "seal")
     }
 }
+
+impl SupportsTemperatureConfig for SealMinerV2025 {}
+impl GetTuningPercent for SealMinerV2025 {}
+impl SetTuningPercent for SealMinerV2025 {}
 
 #[cfg(test)]
 mod tests {

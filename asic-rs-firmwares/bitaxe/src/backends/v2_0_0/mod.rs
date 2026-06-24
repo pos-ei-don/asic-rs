@@ -386,6 +386,7 @@ impl GetTuningTarget for Bitaxe200 {
 impl GetScaledTuningTarget for Bitaxe200 {
     // N/A
 }
+impl GetTuningCapabilities for Bitaxe200 {}
 impl GetLightFlashing for Bitaxe200 {
     // N/A
 }
@@ -579,6 +580,10 @@ impl SupportsFanConfig for Bitaxe200 {
         false
     }
 }
+
+impl SupportsTemperatureConfig for Bitaxe200 {}
+impl GetTuningPercent for Bitaxe200 {}
+impl SetTuningPercent for Bitaxe200 {}
 
 #[cfg(test)]
 mod tests {

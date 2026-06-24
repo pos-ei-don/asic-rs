@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{
     board::{BoardData, MinerControlBoard},
+    capabilities::TuningCapabilities,
     device::DeviceInfo,
     fan::FanData,
     hashrate::HashRate,
@@ -114,10 +115,15 @@ pub struct MinerData {
     /// The current power consumption of the miner
     #[serde(serialize_with = "serialize_power")]
     pub wattage: Option<Power>,
+    /// The current manual tuning percent of full power (100 = unthrottled), where supported
+    pub tuning_percent: Option<u8>,
     /// The current tuning target of the miner, such as power target or hashrate target
     pub tuning_target: Option<TuningTarget>,
     /// The current tuning target adjusted by scaling settings, when available.
     pub scaled_tuning_target: Option<TuningTarget>,
+    /// The factory tuning envelope the firmware exposes (default / min / max
+    /// power and hashrate, or selectable presets), when reported.
+    pub tuning_capabilities: Option<TuningCapabilities>,
     /// The current efficiency in W/TH/s (J/TH) of the miner
     pub efficiency: Option<f64>,
     /// The state of the fault/alert light on the miner

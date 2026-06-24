@@ -32,11 +32,16 @@ mod asic_rs {
         fan::{FanConfig, FanMode},
         pools::{PoolConfig as Pool, PoolGroupConfig as PoolGroup},
         scaling::ScalingConfig,
+        temperature::TemperatureConfig,
         tuning::TuningConfig,
     };
     #[pymodule_export]
     use asic_rs_core::data::{
         board::{BoardData, ChipData, MinerControlBoard},
+        capabilities::{
+            HashRateTuningCapabilities, PowerTuningCapabilities, PresetTuningCapabilities,
+            TuningCapabilities,
+        },
         device::{DeviceInfo, MinerHardware},
         fan::FanData,
         message::{MessageSeverity, MinerComponent, MinerMessage},

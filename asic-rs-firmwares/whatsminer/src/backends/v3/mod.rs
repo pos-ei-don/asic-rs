@@ -534,6 +534,7 @@ impl GetTuningTarget for WhatsMinerV3 {
     }
 }
 impl GetScaledTuningTarget for WhatsMinerV3 {}
+impl GetTuningCapabilities for WhatsMinerV3 {}
 impl GetLightFlashing for WhatsMinerV3 {
     fn parse_light_flashing(&self, data: &HashMap<DataField, Value>) -> Option<bool> {
         data.extract_map::<String, _>(DataField::LightFlashing, |l| l != "auto")
@@ -799,10 +800,9 @@ impl HasDefaultAuth for WhatsMinerV3 {
 impl HasAuth for WhatsMinerV3 {
     fn set_auth(&mut self, auth: MinerAuth) {
         // WhatsMiner V3 username is always "super", V2 is always "admin"
-        self.rpc
-            .set_auth(MinerAuth::new("super", auth.password.expose_secret()));
+        self.rpc.set_auth(MinerAuth::new("super", auth.password()));
         self.v2_rpc
-            .set_auth(MinerAuth::new("admin", auth.password.expose_secret()));
+            .set_auth(MinerAuth::new("admin", auth.password()));
     }
 }
 
@@ -1200,3 +1200,7 @@ mod integration_tests {
         Ok(())
     }
 }
+
+impl SupportsTemperatureConfig for WhatsMinerV3 {}
+impl GetTuningPercent for WhatsMinerV3 {}
+impl SetTuningPercent for WhatsMinerV3 {}

@@ -435,6 +435,7 @@ impl GetTuningTarget for WhatsMinerV1 {
     }
 }
 impl GetScaledTuningTarget for WhatsMinerV1 {}
+impl GetTuningCapabilities for WhatsMinerV1 {}
 impl GetLightFlashing for WhatsMinerV1 {}
 impl GetMessages for WhatsMinerV1 {
     fn parse_messages(&self, data: &HashMap<DataField, Value>) -> Vec<MinerMessage> {
@@ -826,3 +827,7 @@ mod integration_tests {
         Ok(())
     }
 }
+
+impl SupportsTemperatureConfig for WhatsMinerV1 {}
+impl GetTuningPercent for WhatsMinerV1 {}
+impl SetTuningPercent for WhatsMinerV1 {}

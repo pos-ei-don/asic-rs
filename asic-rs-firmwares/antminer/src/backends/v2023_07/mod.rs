@@ -792,6 +792,7 @@ impl GetFluidTemperature for AntMinerV202307 {
 }
 
 impl GetPsuFans for AntMinerV202307 {}
+impl GetTuningCapabilities for AntMinerV202307 {}
 
 impl GetMessages for AntMinerV202307 {
     fn parse_messages(&self, data: &HashMap<DataField, Value>) -> Vec<MinerMessage> {
@@ -998,7 +999,7 @@ impl Resume for AntMinerV202307 {
 impl ChangePassword for AntMinerV202307 {
     async fn change_password(&mut self, password: &str) -> anyhow::Result<bool> {
         let original_auth = self.web.auth();
-        let new_auth = MinerAuth::new(original_auth.username.clone(), password);
+        let new_auth = MinerAuth::new(original_auth.username().to_string(), password);
         let result = self.web.change_password(password).await;
 
         match result {
@@ -1169,6 +1170,10 @@ impl SupportsFanConfig for AntMinerV202307 {
         true
     }
 }
+
+impl SupportsTemperatureConfig for AntMinerV202307 {}
+impl GetTuningPercent for AntMinerV202307 {}
+impl SetTuningPercent for AntMinerV202307 {}
 
 #[cfg(test)]
 mod tests {

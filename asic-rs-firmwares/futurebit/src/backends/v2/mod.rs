@@ -600,7 +600,7 @@ impl GetWattage for ApolloV2 {
 impl GetTuningTarget for ApolloV2 {}
 
 impl GetScaledTuningTarget for ApolloV2 {}
-
+impl GetTuningCapabilities for ApolloV2 {}
 impl GetLightFlashing for ApolloV2 {}
 
 impl GetMessages for ApolloV2 {}
@@ -803,6 +803,10 @@ impl HasDefaultAuth for ApolloV2 {
         MinerAuth::new("futurebit", "futurebit123")
     }
 }
+
+impl SupportsTemperatureConfig for ApolloV2 {}
+impl GetTuningPercent for ApolloV2 {}
+impl SetTuningPercent for ApolloV2 {}
 
 #[cfg(test)]
 mod tests {

@@ -627,7 +627,7 @@ impl GetTuningTarget for AvalonQMiner {
 }
 
 impl GetScaledTuningTarget for AvalonQMiner {}
-
+impl GetTuningCapabilities for AvalonQMiner {}
 impl GetLightFlashing for AvalonQMiner {
     fn parse_light_flashing(&self, data: &HashMap<DataField, Value>) -> Option<bool> {
         data.extract::<bool>(DataField::LightFlashing)
@@ -709,6 +709,10 @@ impl SupportsFanConfig for AvalonQMiner {
         false
     }
 }
+
+impl SupportsTemperatureConfig for AvalonQMiner {}
+impl GetTuningPercent for AvalonQMiner {}
+impl SetTuningPercent for AvalonQMiner {}
 
 #[cfg(test)]
 mod tests {

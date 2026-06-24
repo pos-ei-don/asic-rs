@@ -984,7 +984,7 @@ impl GetTuningTarget for LuxMinerV1 {
 }
 
 impl GetScaledTuningTarget for LuxMinerV1 {}
-
+impl GetTuningCapabilities for LuxMinerV1 {}
 impl GetPsuFans for LuxMinerV1 {}
 
 impl GetMessages for LuxMinerV1 {
@@ -1202,6 +1202,10 @@ impl SupportsFanConfig for LuxMinerV1 {
         false
     }
 }
+
+impl SupportsTemperatureConfig for LuxMinerV1 {}
+impl GetTuningPercent for LuxMinerV1 {}
+impl SetTuningPercent for LuxMinerV1 {}
 #[cfg(test)]
 mod tests {
     use std::sync::{Arc, Mutex};

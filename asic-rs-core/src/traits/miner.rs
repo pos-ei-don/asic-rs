@@ -15,10 +15,12 @@ use crate::{
         fan::FanConfig,
         pools::PoolGroupConfig,
         scaling::ScalingConfig,
+        temperature::TemperatureConfig,
         tuning::TuningConfig,
     },
     data::{
         board::{BoardData, MinerControlBoard},
+        capabilities::TuningCapabilities,
         collector::{DataCollector, DataField, DataLocation},
         command::MinerCommand,
         device::DeviceInfo,
@@ -52,13 +54,22 @@ impl<
 }
 
 pub trait HasMinerControl:
-    SetFaultLight + SetPowerLimit + Restart + Resume + Pause + ChangePassword + FactoryReset + ReadLogs
+    SetFaultLight
+    + SetPowerLimit
+    + SetTuningPercent
+    + Restart
+    + Resume
+    + Pause
+    + ChangePassword
+    + FactoryReset
+    + ReadLogs
 {
 }
 
 impl<
     T: SetFaultLight
         + SetPowerLimit
+        + SetTuningPercent
         + Restart
         + Resume
         + Pause
@@ -73,6 +84,7 @@ pub trait SupportsConfigs:
     CollectConfigs
     + SupportsPoolsConfig
     + SupportsScalingConfig
+    + SupportsTemperatureConfig
     + SupportsTuningConfig
     + SupportsFanConfig
 {
@@ -82,6 +94,7 @@ impl<
     T: CollectConfigs
         + SupportsPoolsConfig
         + SupportsScalingConfig
+        + SupportsTemperatureConfig
         + SupportsTuningConfig
         + SupportsFanConfig,
 > SupportsConfigs for T
@@ -128,8 +141,10 @@ pub trait GetMinerData:
     + GetPsuFans
     + GetFluidTemperature
     + GetWattage
+    + GetTuningPercent
     + GetTuningTarget
     + GetScaledTuningTarget
+    + GetTuningCapabilities
     + GetLightFlashing
     + GetMessages
     + GetUptime
@@ -186,8 +201,10 @@ impl<
         + GetPsuFans
         + GetFluidTemperature
         + GetWattage
+        + GetTuningPercent
         + GetTuningTarget
         + GetScaledTuningTarget
+        + GetTuningCapabilities
         + GetLightFlashing
         + GetMessages
         + GetUptime
@@ -222,8 +239,10 @@ impl<
         let hashrate = self.parse_hashrate(&data);
         let expected_hashrate = self.parse_expected_hashrate(&data);
         let wattage = self.parse_wattage(&data);
+        let tuning_percent = self.parse_tuning_percent(&data);
         let tuning_target = self.parse_tuning_target(&data);
         let scaled_tuning_target = self.parse_scaled_tuning_target(&data);
+        let tuning_capabilities = self.parse_tuning_capabilities(&data);
         let fluid_temperature = self.parse_fluid_temperature(&data);
         let outlet_fluid_temperature = self.parse_outlet_fluid_temperature(&data);
         let fans = self.parse_fans(&data);
@@ -312,8 +331,10 @@ impl<
 
             // Power information
             wattage,
+            tuning_percent,
             tuning_target,
             scaled_tuning_target,
+            tuning_capabilities,
             efficiency,
 
             // Status information
@@ -620,6 +641,21 @@ pub trait GetWattage: CollectData {
     }
 }
 
+// Tuning Percent
+#[async_trait]
+pub trait GetTuningPercent: CollectData {
+    #[tracing::instrument(level = "debug")]
+    async fn get_tuning_percent(&self) -> Option<u8> {
+        let mut collector = self.get_collector();
+        let data = collector.collect(&[DataField::TuningPercent]).await;
+        self.parse_tuning_percent(&data)
+    }
+    #[allow(unused_variables)]
+    fn parse_tuning_percent(&self, data: &HashMap<DataField, Value>) -> Option<u8> {
+        None
+    }
+}
+
 // Tuning Target
 #[async_trait]
 pub trait GetTuningTarget: CollectData {
@@ -647,6 +683,25 @@ pub trait GetScaledTuningTarget: CollectData {
 
     #[allow(unused_variables)]
     fn parse_scaled_tuning_target(&self, data: &HashMap<DataField, Value>) -> Option<TuningTarget> {
+        None
+    }
+}
+
+// Tuning Capabilities
+#[async_trait]
+pub trait GetTuningCapabilities: CollectData {
+    #[tracing::instrument(level = "debug")]
+    async fn get_tuning_capabilities(&self) -> Option<TuningCapabilities> {
+        let mut collector = self.get_collector();
+        let data = collector.collect(&[DataField::TuningCapabilities]).await;
+        self.parse_tuning_capabilities(&data)
+    }
+
+    #[allow(unused_variables)]
+    fn parse_tuning_capabilities(
+        &self,
+        data: &HashMap<DataField, Value>,
+    ) -> Option<TuningCapabilities> {
         None
     }
 }
@@ -743,6 +798,19 @@ pub trait SetPowerLimit {
         anyhow::bail!("Setting power limit is not supported on this platform");
     }
     fn supports_set_power_limit(&self) -> bool;
+}
+
+#[async_trait]
+pub trait SetTuningPercent {
+    /// Set a manual tuning percent of full power (100 = unthrottled).
+    #[allow(unused_variables)]
+    async fn set_tuning_percent(&self, percent: u8) -> anyhow::Result<bool> {
+        anyhow::bail!("Setting throttle is not supported on this platform");
+    }
+    /// Defaults to `false`; backends that support throttling override this.
+    fn supports_set_tuning_percent(&self) -> bool {
+        false
+    }
 }
 
 #[async_trait]
@@ -855,6 +923,31 @@ pub trait SupportsScalingConfig: CollectConfigs {
     }
 
     fn supports_scaling_config(&self) -> bool;
+}
+
+#[async_trait]
+pub trait SupportsTemperatureConfig: CollectConfigs {
+    #[allow(unused_variables)]
+    async fn set_temperature_config(&self, config: TemperatureConfig) -> anyhow::Result<bool> {
+        anyhow::bail!("Setting temperature config is not supported on this platform");
+    }
+    #[tracing::instrument(level = "debug")]
+    async fn get_temperature_config(&self) -> anyhow::Result<TemperatureConfig> {
+        let mut collector = self.get_config_collector();
+        let data = collector.collect(&[ConfigField::Temperature]).await;
+        self.parse_temperature_config(&data)
+    }
+    #[allow(unused_variables)]
+    fn parse_temperature_config(
+        &self,
+        data: &HashMap<ConfigField, Value>,
+    ) -> anyhow::Result<TemperatureConfig> {
+        anyhow::bail!("Getting temperature config is not supported on this platform");
+    }
+    /// Defaults to `false`; backends that report configured thermal limits override this.
+    fn supports_temperature_config(&self) -> bool {
+        false
+    }
 }
 
 #[async_trait]

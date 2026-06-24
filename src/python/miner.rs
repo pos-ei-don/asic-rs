@@ -5,7 +5,7 @@ use asic_rs_core::data::collector::DataField;
 use asic_rs_core::{
     config::{
         fan::FanConfig, pools::PoolGroupConfig as PoolGroup, scaling::ScalingConfig,
-        tuning::TuningConfig,
+        temperature::TemperatureConfig, tuning::TuningConfig,
     },
     data::{
         board::BoardData,
@@ -52,6 +52,14 @@ impl Miner {
             let inner = self.inner.blocking_read();
             f(inner.as_ref())
         })
+    }
+
+    fn apply_auth(&mut self, auth: MinerAuth) -> PyResult<()> {
+        Arc::get_mut(&mut self.inner)
+            .ok_or_else(|| PyRuntimeError::new_err("cannot set auth while miner is in use"))?
+            .get_mut()
+            .set_auth(auth);
+        Ok(())
     }
 }
 
@@ -170,6 +178,11 @@ impl Miner {
     fn supports_set_power_limit(&self, py: Python<'_>) -> bool {
         self.with_miner(py, |miner| miner.supports_set_power_limit())
     }
+    /// Whether this miner supports setting a manual tuning percent.
+    #[getter]
+    fn supports_set_tuning_percent(&self, py: Python<'_>) -> bool {
+        self.with_miner(py, |miner| miner.supports_set_tuning_percent())
+    }
     /// Whether this miner supports restart commands.
     #[getter]
     fn supports_restart(&self, py: Python<'_>) -> bool {
@@ -215,6 +228,11 @@ impl Miner {
     fn supports_scaling_config(&self, py: Python<'_>) -> bool {
         self.with_miner(py, |miner| miner.supports_scaling_config())
     }
+    /// Whether this miner reports configured thermal limits.
+    #[getter]
+    fn supports_temperature_config(&self, py: Python<'_>) -> bool {
+        self.with_miner(py, |miner| miner.supports_temperature_config())
+    }
     /// Whether this miner supports tuning configuration.
     #[getter]
     fn supports_tuning_config(&self, py: Python<'_>) -> bool {
@@ -225,16 +243,23 @@ impl Miner {
     fn supports_fan_config(&self, py: Python<'_>) -> bool {
         self.with_miner(py, |miner| miner.supports_fan_config())
     }
-    /// Set credentials used by subsequent operations on this miner.
+    /// Set username/password credentials used by subsequent operations on this
+    /// miner.
     ///
     /// Call this before starting concurrent operations. It raises `RuntimeError`
     /// if the miner handle is already shared by an active async operation.
     pub fn set_auth(&mut self, username: String, password: String) -> PyResult<()> {
-        Arc::get_mut(&mut self.inner)
-            .ok_or_else(|| PyRuntimeError::new_err("cannot set auth while miner is in use"))?
-            .get_mut()
-            .set_auth(MinerAuth::new(username, password));
-        Ok(())
+        self.apply_auth(MinerAuth::new(username, password))
+    }
+
+    /// Set a pre-issued bearer token for firmwares that accept one (e.g. VNish);
+    /// backends that support it use the token instead of logging in with a
+    /// password.
+    ///
+    /// Call this before starting concurrent operations. It raises `RuntimeError`
+    /// if the miner handle is already shared by an active async operation.
+    pub fn set_token(&mut self, token: String) -> PyResult<()> {
+        self.apply_auth(MinerAuth::from_token(token))
     }
 
     // Data functions
@@ -406,6 +431,14 @@ impl Miner {
             Ok(data.map(|w| w.as_watts()))
         })
     }
+    /// Await the current manual throttle percent (100 = unthrottled), if exposed.
+    pub fn get_tuning_percent<'a>(&self, py: Python<'a>) -> PyResult<PyAwaitable<Option<u8>>> {
+        let inner = Arc::clone(&self.inner);
+        future_into_py(py, async move {
+            let inner = inner.read().await;
+            Ok(inner.get_tuning_percent().await)
+        })
+    }
     /// Await the active tuning target, if exposed by the firmware.
     pub fn get_tuning_target<'a>(
         &self,
@@ -481,6 +514,17 @@ impl Miner {
         future_into_py(py, async move {
             let inner = inner.read().await;
             Ok(inner.get_scaling_config().await.ok())
+        })
+    }
+    /// Await the configured thermal limits, or `None` when unsupported/unavailable.
+    pub fn get_temperature_config<'a>(
+        &self,
+        py: Python<'a>,
+    ) -> PyResult<PyAwaitable<Option<TemperatureConfig>>> {
+        let inner = Arc::clone(&self.inner);
+        future_into_py(py, async move {
+            let inner = inner.read().await;
+            Ok(inner.get_temperature_config().await.ok())
         })
     }
     /// Await tuning configuration, or `None` when unsupported/unavailable.
@@ -609,6 +653,18 @@ impl Miner {
         future_into_py(py, async move {
             let inner = inner.read().await;
             Ok(inner.set_power_limit(Power::from_watts(watts)).await.ok())
+        })
+    }
+    /// Set a manual tuning percent of full power (100 = unthrottled).
+    pub fn set_tuning_percent<'a>(
+        &self,
+        py: Python<'a>,
+        percent: u8,
+    ) -> PyResult<PyAwaitable<Option<bool>>> {
+        let inner = Arc::clone(&self.inner);
+        future_into_py(py, async move {
+            let inner = inner.read().await;
+            Ok(inner.set_tuning_percent(percent).await.ok())
         })
     }
     /// Replace the configured mining pool groups.

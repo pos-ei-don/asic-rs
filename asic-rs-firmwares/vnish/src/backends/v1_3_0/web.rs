@@ -242,6 +242,17 @@ impl VnishWebAPI {
             .await
     }
 
+    /// Set a manual throttle as a percent of full power (100 = unthrottled).
+    pub async fn throttle(&self, percent: u8) -> anyhow::Result<Value> {
+        self.send_command(
+            "mining/throttle",
+            true,
+            Some(serde_json::json!({ "percent": percent })),
+            Method::POST,
+        )
+        .await
+    }
+
     pub async fn set_settings(&self, settings: Value) -> anyhow::Result<Value> {
         self.send_command("settings", true, Some(settings), Method::POST)
             .await

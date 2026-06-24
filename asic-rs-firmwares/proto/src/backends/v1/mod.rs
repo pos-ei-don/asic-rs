@@ -623,7 +623,7 @@ impl GetTuningTarget for ProtoV1 {
 }
 
 impl GetScaledTuningTarget for ProtoV1 {}
-
+impl GetTuningCapabilities for ProtoV1 {}
 // No endpoint reports locate-LED state, so it's set-only.
 impl GetLightFlashing for ProtoV1 {}
 
@@ -820,7 +820,7 @@ impl ChangePassword for ProtoV1 {
     async fn change_password(&mut self, password: &str) -> anyhow::Result<bool> {
         let success = self.web.set_password(password).await?;
         if success {
-            let username = self.auth.username.clone();
+            let username = self.auth.username().to_string();
             self.set_auth(MinerAuth::new(username, password));
         }
         Ok(success)
@@ -1005,6 +1005,10 @@ impl HasAuth for ProtoV1 {
         self.web.set_auth(auth);
     }
 }
+
+impl SupportsTemperatureConfig for ProtoV1 {}
+impl GetTuningPercent for ProtoV1 {}
+impl SetTuningPercent for ProtoV1 {}
 
 #[cfg(test)]
 mod tests {
