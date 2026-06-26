@@ -714,6 +714,8 @@ impl SupportsTemperatureConfig for AvalonQMiner {}
 impl GetTuningPercent for AvalonQMiner {}
 impl SetTuningPercent for AvalonQMiner {}
 
+impl SupportsPresets for AvalonQMiner {}
+
 #[cfg(test)]
 mod tests {
     use asic_rs_core::test::api::MockAPIClient;
@@ -791,5 +793,3 @@ mod tests {
         Ok(())
     }
 }
-
-impl SupportsPresets for AvalonQMiner {}
