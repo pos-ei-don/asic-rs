@@ -66,15 +66,35 @@ impl GetConfigsLocations for VnishV130 {
             command: "summary",
             parameters: None,
         };
+        // VNish 1.3.x slimmed down the public `/summary`: `miner.misc` (which
+        // holds `restart_temp`) is gone, and `miner.cooling` no longer carries
+        // `min_startup_water_temp`. Both still live in the authenticated
+        // `/settings` endpoint, which is the canonical config source. Read the
+        // thermal config from `/settings` and keep `/summary` as a fallback so
+        // any firmware that still exposes the limits there keeps working.
+        const WEB_SETTINGS: MinerCommand = MinerCommand::WebAPI {
+            command: "settings",
+            parameters: None,
+        };
         match data_field {
-            ConfigField::Temperature => vec![(
-                WEB_SUMMARY,
-                ConfigExtractor {
-                    func: get_by_pointer,
-                    key: Some("/miner"),
-                    tag: None,
-                },
-            )],
+            ConfigField::Temperature => vec![
+                (
+                    WEB_SETTINGS,
+                    ConfigExtractor {
+                        func: get_by_pointer,
+                        key: Some("/miner"),
+                        tag: None,
+                    },
+                ),
+                (
+                    WEB_SUMMARY,
+                    ConfigExtractor {
+                        func: get_by_pointer,
+                        key: Some("/miner"),
+                        tag: None,
+                    },
+                ),
+            ],
             _ => vec![],
         }
     }
@@ -998,10 +1018,12 @@ impl SupportsTemperatureConfig for VnishV130 {
         true
     }
 
-    /// VNish reports configured thermal limits in `/summary`: the minimum
-    /// startup water temperature and the self-protection restart temperature.
-    /// `hot` is not exposed via `/summary` (left `None` = not reported, not
-    /// "no limit").
+    /// VNish reports the configured thermal limits in `/settings`
+    /// (`miner.misc.restart_temp` and `miner.cooling.min_startup_water_temp`):
+    /// the minimum startup water temperature and the self-protection restart
+    /// temperature. On 1.3.x these are no longer present in `/summary`, so the
+    /// config location reads `/settings` (see `get_configs_locations`). `hot` is
+    /// not reported by the firmware (left `None` = not reported, not "no limit").
     fn parse_temperature_config(
         &self,
         data: &HashMap<ConfigField, Value>,
