@@ -110,6 +110,15 @@ impl GetDataLocations for VnishV120 {
             command: "chains/factory-info",
             parameters: None,
         };
+        // VNish >= 1.3.x moved the configured thermal limits out of the public
+        // `/summary` into the authenticated `/settings` endpoint. `/settings`
+        // is the canonical config source on all firmware lines, so we read the
+        // limits from there and keep `/summary` as a fallback for older firmware
+        // that still exposed `miner.misc` / `miner.cooling` there.
+        const WEB_SETTINGS: MinerCommand = MinerCommand::WebAPI {
+            command: "settings",
+            parameters: None,
+        };
 
         match data_field {
             DataField::Mac => vec![(
@@ -302,22 +311,42 @@ impl GetDataLocations for VnishV120 {
                     tag: None,
                 },
             )],
-            DataField::MinStartupTemperature => vec![(
-                WEB_SUMMARY,
-                DataExtractor {
-                    func: get_by_pointer,
-                    key: Some("/miner/cooling/min_startup_water_temp"),
-                    tag: None,
-                },
-            )],
-            DataField::RestartTemperature => vec![(
-                WEB_SUMMARY,
-                DataExtractor {
-                    func: get_by_pointer,
-                    key: Some("/miner/misc/restart_temp"),
-                    tag: None,
-                },
-            )],
+            DataField::MinStartupTemperature => vec![
+                (
+                    WEB_SETTINGS,
+                    DataExtractor {
+                        func: get_by_pointer,
+                        key: Some("/miner/cooling/min_startup_water_temp"),
+                        tag: None,
+                    },
+                ),
+                (
+                    WEB_SUMMARY,
+                    DataExtractor {
+                        func: get_by_pointer,
+                        key: Some("/miner/cooling/min_startup_water_temp"),
+                        tag: None,
+                    },
+                ),
+            ],
+            DataField::RestartTemperature => vec![
+                (
+                    WEB_SETTINGS,
+                    DataExtractor {
+                        func: get_by_pointer,
+                        key: Some("/miner/misc/restart_temp"),
+                        tag: None,
+                    },
+                ),
+                (
+                    WEB_SUMMARY,
+                    DataExtractor {
+                        func: get_by_pointer,
+                        key: Some("/miner/misc/restart_temp"),
+                        tag: None,
+                    },
+                ),
+            ],
             _ => vec![],
         }
     }
