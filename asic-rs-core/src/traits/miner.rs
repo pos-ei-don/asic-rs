@@ -17,6 +17,7 @@ use crate::{
         preset::PresetInfo,
         scaling::ScalingConfig,
         temperature::TemperatureConfig,
+        timezone::TimezoneConfig,
         tuning::TuningConfig,
     },
     data::{
@@ -26,7 +27,7 @@ use crate::{
         command::MinerCommand,
         device::DeviceInfo,
         fan::FanData,
-        firmware::FirmwareImage,
+        firmware::{FirmwareImage, FirmwareUpdate},
         hashrate::{HashRate, HashRateUnit},
         message::MinerMessage,
         miner::{MinerData, TuningTarget},
@@ -100,6 +101,7 @@ pub trait SupportsConfigs:
     + SupportsTemperatureConfig
     + SupportsTuningConfig
     + SupportsFanConfig
+    + SupportsTimezoneConfig
 {
 }
 
@@ -109,7 +111,8 @@ impl<
         + SupportsScalingConfig
         + SupportsTemperatureConfig
         + SupportsTuningConfig
-        + SupportsFanConfig,
+        + SupportsFanConfig
+        + SupportsTimezoneConfig,
 > SupportsConfigs for T
 {
 }
@@ -905,6 +908,19 @@ pub trait UpgradeFirmware {
     fn supports_upgrade_firmware(&self) -> bool {
         false
     }
+
+    /// Check whether a newer firmware is available for this miner.
+    ///
+    /// This is an on-demand call (it typically queries the vendor's release
+    /// server), not part of the regular telemetry poll. Defaults to
+    /// unsupported.
+    async fn check_firmware_update(&self) -> anyhow::Result<FirmwareUpdate> {
+        anyhow::bail!("Checking for firmware updates is not supported on this platform");
+    }
+
+    fn supports_check_firmware_update(&self) -> bool {
+        false
+    }
 }
 
 // Config traits
@@ -975,6 +991,17 @@ pub trait SupportsTemperatureConfig: CollectConfigs {
     }
     /// Defaults to `false`; backends that report configured thermal limits override this.
     fn supports_temperature_config(&self) -> bool {
+pub trait SupportsTimezoneConfig: CollectConfigs {
+    async fn set_timezone_config(&self, config: TimezoneConfig) -> anyhow::Result<bool> {
+        anyhow::bail!("Setting timezone config is not supported on this platform");
+    async fn get_timezone_config(&self) -> anyhow::Result<TimezoneConfig> {
+        let data = collector.collect(&[ConfigField::Timezone]).await;
+        self.parse_timezone_config(&data)
+    fn parse_timezone_config(
+    ) -> anyhow::Result<TimezoneConfig> {
+        anyhow::bail!("Getting timezone config is not supported on this platform");
+
+    fn supports_timezone_config(&self) -> bool {
         false
     }
 }

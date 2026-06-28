@@ -34,6 +34,7 @@ mod asic_rs {
         preset::PresetInfo,
         scaling::ScalingConfig,
         temperature::TemperatureConfig,
+        timezone::TimezoneConfig,
         tuning::TuningConfig,
     };
     #[pymodule_export]
@@ -45,6 +46,7 @@ mod asic_rs {
         },
         device::{DeviceInfo, MinerHardware},
         fan::FanData,
+        firmware::FirmwareUpdate,
         message::{MessageSeverity, MinerComponent, MinerMessage},
         miner::{MinerData, PyTuningTarget as TuningTarget},
         pool::{PoolData, PoolGroupData, PoolScheme, PoolURL},

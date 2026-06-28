@@ -3,8 +3,9 @@ use std::{collections::HashMap, net::IpAddr, str::FromStr, time::Duration};
 use anyhow;
 use asic_rs_core::{
     config::{
-        collector::{ConfigCollector, ConfigField, ConfigLocation},
+        collector::{ConfigCollector, ConfigExtractor, ConfigField, ConfigLocation},
         pools::PoolGroupConfig,
+        timezone::TimezoneConfig,
     },
     data::{
         board::{BoardData, MinerControlBoard},
@@ -15,6 +16,7 @@ use asic_rs_core::{
         command::MinerCommand,
         device::{DeviceInfo, HashAlgorithm},
         fan::FanData,
+        firmware::FirmwareUpdate,
         hashrate::{HashRate, HashRateUnit},
         message::{MessageSeverity, MinerMessage},
         miner::TuningTarget,
@@ -79,7 +81,20 @@ impl APIClient for BraiinsV2604 {
 impl GetConfigsLocations for BraiinsV2604 {
     #[allow(unused_variables)]
     fn get_configs_locations(&self, data_field: ConfigField) -> Vec<ConfigLocation> {
-        vec![]
+        const GQL_TIMEZONE: MinerCommand = MinerCommand::GraphQL {
+            command: "{ bos { timezone { id } timezoneList { id } } }",
+        };
+        match data_field {
+            ConfigField::Timezone => vec![(
+                GQL_TIMEZONE,
+                ConfigExtractor {
+                    func: get_by_pointer,
+                    key: Some("/bos"),
+                    tag: None,
+                },
+            )],
+            _ => vec![],
+        }
     }
 }
 
@@ -631,6 +646,55 @@ impl GetTuningCapabilities for BraiinsV2604 {
         // power_target (watts) and hashrate_target (TH/s) envelopes.
         let tuner = data.get(&DataField::TuningCapabilities)?;
         Some(tuner_constraints_capabilities(tuner))
+#[async_trait]
+impl SupportsTimezoneConfig for BraiinsV2604 {
+    fn supports_timezone_config(&self) -> bool {
+        true
+    }
+
+    fn parse_timezone_config(
+        data: &HashMap<ConfigField, Value>,
+    ) -> anyhow::Result<TimezoneConfig> {
+        let obj = data
+            .get(&ConfigField::Timezone)
+            .ok_or_else(|| anyhow::anyhow!("No timezone data returned"))?;
+        let timezone = obj
+            .pointer("/timezone/id")
+            .and_then(|v| v.as_str())
+            .map(String::from);
+        let available = obj
+            .pointer("/timezoneList")
+            .and_then(|v| v.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|t| t.get("id").and_then(|v| v.as_str()).map(String::from))
+                    .collect()
+            })
+            .unwrap_or_default();
+        Ok(TimezoneConfig {
+            timezone,
+            available,
+        })
+    }
+
+    async fn set_timezone_config(&self, config: TimezoneConfig) -> anyhow::Result<bool> {
+        let timezone = match config.timezone {
+            Some(tz) => tz,
+            None => anyhow::bail!("Timezone config has no timezone to set"),
+        };
+        let mutation = r#"mutation ($tz: String!) {
+            bos { setTimezone(timezone: $tz) { __typename } }
+        }"#;
+        let variables = json!({ "tz": timezone });
+        let result = self
+            .graphql
+            .send_graphql_command(mutation, true, Some(variables))
+            .await?;
+        // BosResult is a union; a `BosError` variant signals failure.
+        let typename = result
+            .pointer("/bos/setTimezone/__typename")
+            .and_then(|v| v.as_str());
+        Ok(matches!(typename, Some(t) if t != "BosError"))
     }
 }
 
@@ -857,6 +921,51 @@ impl SupportsScalingConfig for BraiinsV2604 {
 impl UpgradeFirmware for BraiinsV2604 {
     fn supports_upgrade_firmware(&self) -> bool {
         false
+    }
+
+    fn supports_check_firmware_update(&self) -> bool {
+        true
+    }
+
+    /// Reads the installed version and asks BOS to check the vendor's release
+    /// server (`bos.checkForUpgrade`) via the authenticated GraphQL client.
+    async fn check_firmware_update(&self) -> anyhow::Result<FirmwareUpdate> {
+        const GQL_CHECK_UPGRADE: MinerCommand = MinerCommand::GraphQL {
+            command: r#"{
+                bos {
+                    info { version { full } }
+                    checkForUpgrade {
+                        __typename
+                        ... on UpgradeDetail {
+                            latestRelease {
+                                version
+                                releaseDate
+                                url
+                            }
+                        }
+                    }
+                }
+            }"#,
+        };
+        let data = self.graphql.get_api_result(&GQL_CHECK_UPGRADE).await?;
+
+        let s = |p: &str| -> Option<String> {
+            data.pointer(p).and_then(|v| v.as_str()).map(String::from)
+        };
+        let current_version = s("/bos/info/version/full");
+        let latest_version = s("/bos/checkForUpgrade/latestRelease/version");
+        let release_date = s("/bos/checkForUpgrade/latestRelease/releaseDate");
+        let release_url = s("/bos/checkForUpgrade/latestRelease/url");
+        let update_available =
+            latest_version.is_some() && latest_version.as_deref() != current_version.as_deref();
+
+        Ok(FirmwareUpdate {
+            current_version,
+            latest_version,
+            update_available,
+            release_date,
+            release_url,
+        })
     }
 }
 
