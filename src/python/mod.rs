@@ -34,6 +34,7 @@ mod asic_rs {
         preset::PresetInfo,
         scaling::ScalingConfig,
         temperature::TemperatureConfig,
+        timezone::TimezoneConfig,
         tuning::TuningConfig,
     };
     #[pymodule_export]
