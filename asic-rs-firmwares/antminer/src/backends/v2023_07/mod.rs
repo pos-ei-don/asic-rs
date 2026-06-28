@@ -1179,6 +1179,8 @@ impl SupportsTemperatureConfig for AntMinerV202307 {}
 impl GetTuningPercent for AntMinerV202307 {}
 impl SetTuningPercent for AntMinerV202307 {}
 
+impl SupportsPresets for AntMinerV202307 {}
+
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
@@ -1297,5 +1299,3 @@ mod tests {
         Ok(())
     }
 }
-
-impl SupportsPresets for AntMinerV202307 {}

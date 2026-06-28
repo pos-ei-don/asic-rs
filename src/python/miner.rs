@@ -5,8 +5,8 @@ use asic_rs_core::data::collector::DataField;
 use asic_rs_core::{
     config::{
         fan::FanConfig, pools::PoolGroupConfig as PoolGroup, preset::PresetInfo,
-        scaling::ScalingConfig, temperature::TemperatureConfig,
-        timezone::TimezoneConfig, tuning::TuningConfig,
+        scaling::ScalingConfig, temperature::TemperatureConfig, timezone::TimezoneConfig,
+        tuning::TuningConfig,
     },
     data::{
         board::BoardData,
