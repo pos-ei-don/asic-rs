@@ -1010,6 +1010,8 @@ impl SupportsTemperatureConfig for ProtoV1 {}
 impl GetTuningPercent for ProtoV1 {}
 impl SetTuningPercent for ProtoV1 {}
 
+impl SupportsPresets for ProtoV1 {}
+
 #[cfg(test)]
 mod tests {
     use std::{collections::HashMap, str::FromStr};
@@ -1372,5 +1374,3 @@ mod tests {
         assert_eq!(messages[1].component, Some(MinerComponent::power_supply(0)));
     }
 }
-
-impl SupportsPresets for ProtoV1 {}
