@@ -665,6 +665,13 @@ impl Miner {
         &self,
         py: Python<'a>,
         percent: u8,
+    ) -> PyResult<PyAwaitable<Option<bool>>> {
+        let inner = Arc::clone(&self.inner);
+        future_into_py(py, async move {
+            let inner = inner.read().await;
+            Ok(inner.set_tuning_percent(percent).await.ok())
+        })
+    }
     /// Await timezone configuration, or `None` when unsupported/unavailable.
     pub fn get_timezone_config<'a>(
         &self,
