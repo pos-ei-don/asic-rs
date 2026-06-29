@@ -693,7 +693,6 @@ impl Miner {
         let inner = Arc::clone(&self.inner);
         future_into_py(py, async move {
             let inner = inner.read().await;
-            Ok(inner.set_tuning_percent(percent).await.ok())
             Ok(inner.set_timezone_config(config).await.ok())
         })
     }
