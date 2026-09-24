@@ -24,6 +24,7 @@ Re-add: `git remote add upstream https://github.com/256foundation/asic-rs.git`
 | #284 | `SetPowerLimit` für VNish (preset-basiert) | offen |
 | #285 | `BoardData.chip_temperature` | **UMSTRITTEN** — Roman will Chip-Temp in `intake`/`outlet` statt neuem Feld (kollidiert mit Hydro-Wasserbelegung aus #277) |
 | #287 | VNish `messages` | offen |
+| #391 | Braiins `v26_04`: abgelaufenes Bearer-Token bei 401 erneuern (Port von #255, das nur `v25_07` abdeckte). Anlass 2026-09-23: nach Firmware-Update/Neustart scheiterte `PUT /actions/pause` mit 401 bis zum Neuaufbau des Clients | **eingereicht** — live als Fork-Wheel `0.8.1.1` (`wheels-vnish-38`, Zweig `live-0.8.1.1`) |
 | `feat-vnish-safety` (Branch) | Caps + `messages` + Thermal-Limits | **GEHALTEN** bis HACS-Abnahme / Romans Design-OK |
 
 ## Fork-Wheel-Pipeline (Build-Autarkie)
